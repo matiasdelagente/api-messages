@@ -9,7 +9,7 @@ var helper 	= require('../helpers');
 module.exports.sendList = function(req, res, next) {
 	var msg_id=hat(60,36);
 	console.log(msg_id);
-	res.json({ status: 'ok',responce: 'procesamiento en curso', 'msg_list_id': msg_id});
+	res.status(201).send({ status: 'ok',responce: 'procesamiento en curso', 'msg_list_id': msg_id});
 	listSender(req.body, msg_id, req.oauth.bearerToken.clientId);
 	};
 

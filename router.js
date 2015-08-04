@@ -1,4 +1,5 @@
-var messages = require('./routes/messages');
+var messages 	= require('./routes/messages');
+var middleware 	= require('./middleware');
 
 app.use(app.oauth.errorHandler());
 

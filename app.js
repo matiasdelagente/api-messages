@@ -6,7 +6,6 @@ var Log = require('log')
 //Express:
 var express         = require('express');
 var bodyParser      = require('body-parser');
-var errorhandler    = require('errorhandler');
 
 app = express();
 router = express.Router();
