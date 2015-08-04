@@ -1,0 +1,23 @@
+{
+  "db": "mongodb://192.168.10.68/oauth2",
+  "amqp": {
+          "addr": "192.168.10.15",
+          "user":"admin",
+          "pass":"2334E8Fx4g9p24g",
+          "port":"",
+          "queues": {
+          "log":"log",
+          "msg":"messages"
+        }
+    },
+  "app": {
+      "port": "3002",
+      "ver": "0.1",
+      "defaults": {
+            "user": "tween",
+            "from": "26100",
+            "amqp": "mq-sms01",
+            "trace":"API_MESSAGES"
+      }
+    }
+}
