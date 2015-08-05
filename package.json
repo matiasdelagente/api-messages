@@ -16,8 +16,5 @@
     "mongoose": "^4.0.6",
     "node-oauth2-server": "^2.0.2",
     "hat":"*"
-    },
-  "devDependencies": {
-    "nodemon": "^1.0.15"
-  }
+    }
 }
