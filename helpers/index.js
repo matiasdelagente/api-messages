@@ -39,11 +39,14 @@ module.exports.checkMessage = function(sms){
  * @param {} type
  * @return Literal
  */
- module.exports.countryCode = function(country) {
-	
+ module.exports.countryCode = function(sentCode) {
 
-	return "";
-};
+ 	for( code in codes) {
+ 		if (codes[code].ISO == sentCode) {
+ 			return codes[code].CODE; 
+ 		}
+ 	}
+}
 
 /**
  * Description

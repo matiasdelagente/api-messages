@@ -27,14 +27,16 @@ function listSender(list, msg_id, username) {
 			user 	: username,
 			payload	: helper.checkMessage(list[element].msg),
 			channel : helper.checkChannel(list[element].channel),
-			areaCode: (list[element].country_iso)?helper.areaCode():"",
+			country : list[element].countryCode,
 			type	: (list[element].type == undefined)? username: list[element].type,
 			ttd		: (list[element].ttd == undefined || parseInt(list[element].ttd) == NaN)? 0:parseInt(list[element].ttd),
 			listID : msg_id,
 			flags	: list[element].flags,
 		}
+		var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
+		console.log(code);
 		for(phone in list[element].phones) {
-				message.phone	= list[element].phones[phone];
+				message.phone	= code+list[element].phones[phone];
 				message.msgID  	= msg_id+'-'+i;
 				rabbit.send(message);
 				i++;
@@ -43,15 +45,16 @@ function listSender(list, msg_id, username) {
 }
 
 function singleSender(msg, msg_id, username) {
+	var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
 	var message = {
 			user 	: username,
 			payload	: helper.checkMessage(msg.msg),
 			channel : helper.checkChannel(msg.channel),
-			areaCode: (msg.country_iso)?helper.areaCode():"",
+			areaCode: (msg.country != undefined)?helper.areaCode(msg.country):"",
 			type	: (msg.type == undefined)? username: msg.type,
 			ttd		: (msg.ttd == undefined || parseInt(msg.ttd) == NaN)? 0:parseInt(msg.ttd),
 			flags	: msg.flags,
-			phone	: msg.phone,
+			phone	: code+msg.phone,
 			msgID  	: msg_id
 		}
 	rabbit.send(message);

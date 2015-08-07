@@ -3,18 +3,28 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "./node_modules/.bin/nodemon server.js"
+    "start": "./node_modules/.bin/nodemon server.js",
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha -R spec test/init.js test/**/*_test.js"
   },
   "dependencies": {
-    "amqplib": "git+ssh://git@64.76.23.184:7999/vcg/amqplib.git#master",
+    "amqplib": "git+ssh://git@64.76.23.184:7999/scm/vcg/amqplib.git#master",
     "bcrypt": ">= 0.5.x",
     "body-parser": "^1.13.2",
     "colors": "^1.1.2",
+    "cookie-parser": "^1.3.5",
+    "cookie-session": "^1.2.0",
     "express": "4.13.1",
-    "log": "*",
+    "jade": "*",
+    "log": "^1.4.0",
     "method-override": "^2.3.3",
     "mongoose": "^4.0.6",
     "node-oauth2-server": "^2.0.2",
     "hat":"*"
-    }
+    },
+  "devDependencies": {
+    "supertest": "^0.9.0",
+    "mocha": "^1.17.1",
+    "nodemon": "^1.0.15",
+    "should": "^3.3.0"
+  }
 }
