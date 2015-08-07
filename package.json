@@ -7,7 +7,7 @@
     "test": "NODE_ENV=test ./node_modules/.bin/mocha -R spec test/init.js test/**/*_test.js"
   },
   "dependencies": {
-    "amqplib": "git+ssh://git@192.168.10.16:7999/vcg/amqplib.git#master",
+    "amqplib": "git+http://git@64.76.23.184:7999/vcg/amqplib.git#master",
     "bcrypt": ">= 0.5.x",
     "body-parser": "^1.13.2",
     "colors": "^1.1.2",
