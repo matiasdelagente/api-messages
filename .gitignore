@@ -1,0 +1,4 @@
+!node_modules/amqplib
+node_modules/*
+*.log
+npm-debug.log*
