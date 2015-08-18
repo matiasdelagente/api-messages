@@ -16,14 +16,16 @@ module.exports.sendList = function(req, res, next) {
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
 	console.log(msg_id);
-	res.json({ status: 'ok',responce: 'mensaje enviado corectamente', 'msg_id': msg_id});
-	singleSender(req.body, msg_id, req.oauth.bearerToken.clientId);
+		singleSender(req.body, msg_id, req.oauth.bearerToken.clientId);
+		res.json({ status: 'ok',responce: 'mensaje enviado corectamente', 'msg_id': msg_id});
 	};
 
 function listSender(list, msg_id, username) {
 	var i=0;
+	console.log("list:");
+	console.log(list);
 	for(element in list) {
-		var message = {
+		 var message = {
 			user 	: username,
 			payload	: helper.checkMessage(list[element].msg),
 			channel : helper.checkChannel(list[element].channel),
@@ -34,7 +36,6 @@ function listSender(list, msg_id, username) {
 			flags	: list[element].flags,
 		}
 		var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
-		console.log(code);
 		for(phone in list[element].phones) {
 				message.phone	= code+list[element].phones[phone];
 				message.msgID  	= msg_id+'-'+i;
@@ -45,7 +46,7 @@ function listSender(list, msg_id, username) {
 }
 
 function singleSender(msg, msg_id, username) {
-	var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
+	var code = (msg.country != undefined)?helper.countryCode(msg.country):"";
 	var message = {
 			user 	: username,
 			payload	: helper.checkMessage(msg.msg),
@@ -57,5 +58,6 @@ function singleSender(msg, msg_id, username) {
 			phone	: code+msg.phone,
 			msgID  	: msg_id
 		}
-	rabbit.send(message);
+		console.log("send: ",message);
+	//rabbit.send(message);
 }

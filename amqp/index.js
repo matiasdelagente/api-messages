@@ -1,5 +1,5 @@
-amqp    = require('amqplib/callback_api');
-var helper= require('../helpers');
+amqp    	= require('amqplib/callback_api');
+var helper 	= require('../helpers');
 
 /*
  * Method to connect to the rabitMQ server. Single connection on the poll of connections
@@ -33,11 +33,11 @@ module.exports.send = function(msg) {
 	msg.timestamp	= {received : new Date().getTime()};
 	//Seteamos el estado:
 	msg.status		= 0;
-
+	
 	//Finalmente enviamos el mensaje:
 		var sms = JSON.stringify(msg);
-		rabbitChannel.sendToQueue(server.queues.msg, new Buffer(sms), {expiration: msg.ttd});
-		rabbitChannel.sendToQueue(server.queues.log, new Buffer(sms), {priority: 8});
+		rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: msg.ttd});
+		rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
-		log.info('Sent[*]',sms);
+		console.log('Sent[*]',sms);
 }
