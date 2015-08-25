@@ -42,13 +42,11 @@ function checkToken (req,res,done) {
     if (err)
     	res.status(503).send({ status: 'service_unavailable',responce: 'Sorry, try latter.'});
 
-console.log(token);
     if (!token[0])
       res.status(499).send({ status: 'invalid_token',responce: 'The access token provided is invalid.'});
-	
-    if (token[0].expires !== null && (!token[0].expires || token[0].expires < new Date())) {
+    else {
+      if (token[0].expires !== null && (!token[0].expires || token[0].expires < new Date())) {
             res.status(498).send({ status: 'invalid_token',responce: 'The access token provided has expired.'});
-
     }
     else {
     	// Expose params
@@ -56,5 +54,6 @@ console.log(token);
     	req.user = token[0].user ? token[0].user : { id: token[0].userId };
     	done();
 		}
+  }
 	});
 }
