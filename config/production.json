@@ -18,6 +18,7 @@
             "from": "26100",
             "amqp": "mq-sms01",
             "trace":"API_MESSAGES"
-      }
-    }
+          }
+      },
+      "oauth2": "mongodb://localhost/oauth2"
 }
