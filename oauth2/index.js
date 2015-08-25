@@ -14,7 +14,7 @@ module.exports.authorise = function(req,res,next) {
 	if (headerToken) {
 		var matches = headerToken.match(/Bearer\s(\S+)/);
     	if (!matches) {
-			res.status(499).send({ status: 'token_required',responce: 'no token was submitted.'});
+			res.status(499).send({ status: 'token_required',response: 'no token was submitted.'});
     	}
     headerToken = matches[1];
     req.bearerToken = headerToken;
@@ -24,7 +24,7 @@ module.exports.authorise = function(req,res,next) {
 	});
   }
   else
- 		res.status(417).send({ status: 'expectation_failed',responce: 'Expected request-header fail.'});
+ 		res.status(417).send({ status: 'expectation_failed',response: 'Expected request-header fail.'});
 
 }
 
@@ -40,13 +40,13 @@ function checkToken (req,res,done) {
   	collection.find({"accessToken": req.bearerToken},{},{limit:1}).toArray(function(err, token) {
 
     if (err)
-    	res.status(503).send({ status: 'service_unavailable',responce: 'Sorry, try latter.'});
+    	res.status(503).send({ status: 'service_unavailable',response: 'Sorry, try latter.'});
 
     if (!token[0])
-      res.status(499).send({ status: 'invalid_token',responce: 'The access token provided is invalid.'});
+      res.status(499).send({ status: 'invalid_token',response: 'The access token provided is invalid.'});
     else {
       if (token[0].expires !== null && (!token[0].expires || token[0].expires < new Date())) {
-            res.status(498).send({ status: 'invalid_token',responce: 'The access token provided has expired.'});
+            res.status(498).send({ status: 'invalid_token',response: 'The access token provided has expired.'});
     }
     else {
     	// Expose params
