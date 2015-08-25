@@ -20,5 +20,5 @@
             "trace":"API_MESSAGES"
           }
       },
-      "oauth2": "mongodb://localhost/oauth2"
+      "oauth2": "mongodb://192.168.10.66/oauth2"
 }
