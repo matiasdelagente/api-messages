@@ -1,8 +1,7 @@
 var messages 	= require('./routes/messages');
 var middleware 	= require('./middleware');
-
-app.use(app.oauth.errorHandler());
+var oauth2		= require('./oauth2');
 
 //Envio de avisos (ruta autentificada con oauth2):
-router.post('/messages/list', app.oauth.authorise(),messages.sendList);
-router.post('/messages', app.oauth.authorise(),middleware.message,messages.send);
+router.post('/messages/list', oauth2.authorise,messages.sendList);
+router.post('/messages', oauth2.authorise,middleware.message,messages.send);

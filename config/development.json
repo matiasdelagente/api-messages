@@ -1,5 +1,4 @@
 {
-  "db": "mongodb://localhost/oauth2",
   "amqp": {
           "addr": "192.168.10.15",
           "user":"admin",
@@ -18,6 +17,7 @@
             "from": "26100",
             "amqp": "mq-sms01",
             "trace":"API_MESSAGES"
-      }
-    }
+            }
+      },
+  "oauth2": "mongodb://localhost/oauth2"
 }

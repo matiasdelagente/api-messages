@@ -5,6 +5,7 @@ var http	= require('http');
 
 //RabbitMQ library:
 rabbit = require('./amqp').connect((config.amqp));
+oauth2 = require('./oauth2');
 
 app.use(function(err, req, res, next) {
   if(err.code == 401)
