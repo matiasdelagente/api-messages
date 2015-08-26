@@ -13,9 +13,11 @@ var bodyParser      = require('body-parser');
 app 	= express();
 router 	= express.Router();
 
+//Request parsing middlewares:
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+//Application router:
 require('./router');
 app.use('/api/'+config.app.ver ,router);
 
