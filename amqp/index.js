@@ -36,8 +36,19 @@ module.exports.send = function(msg) {
 	
 	//Finalmente enviamos el mensaje:
 		var sms = JSON.stringify(msg);
-		rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: msg.ttd});
+		rabbitChannel.sendToQueue('messages', new Buffer(sms), {expires: msg.ttd});
 		rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
 		console.log('Sent[*]',sms);
+}
+
+/*
+ * Send a status update to RabbitMQ server - Makes the field name mapping
+ * @method send
+ * @param {} msg
+ * @return 
+ */
+module.exports.update = function(state) {
+		rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
+		console.log('Sent[*]',state);
 }

@@ -18,6 +18,11 @@ module.exports.send = function(req, res, next) {
 	res.status(201).send({ status: 'ok',response: 'mensaje enviado corectamente', 'msg_id': msg_id});
 	};
 
+module.exports.update = function(req, res, next) {
+	rabbit.update({'msgID':req.params.id,'status':req.body.msgStatus});
+	res.status(201).send({ status: 'ok',response: 'nuevo estado guardado','new_status':req.body.msgStatus,'msg_id': req.params.id});
+	};
+
 function listSender(list, msg_id, username) {
 	var i=0;
 	for(element in list) {
