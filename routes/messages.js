@@ -8,19 +8,19 @@ var helper 	= require('../helpers');
 
 module.exports.sendList = function(req, res, next) {
 	var msg_id=hat(60,36);
-	res.status(201).send({ status: 'ok',response: 'procesamiento en curso', 'msg_list_id': msg_id});
+	res.status(201).send({ status: 'ok',response: 'procesamiento en curso', 'msgListID': msg_id});
 	listSender(req.body, msg_id, req.user);
 	};
 
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
 	singleSender(req.body, msg_id, req.user);
-	res.status(201).send({ status: 'ok',response: 'mensaje enviado corectamente', 'msg_id': msg_id});
+	res.status(201).send({ status: 'ok',response: 'mensaje enviado corectamente', 'msgID': msg_id});
 	};
 
 module.exports.update = function(req, res, next) {
 	rabbit.update({'msgID':req.params.id,'status':req.body.msgStatus});
-	res.status(201).send({ status: 'ok',response: 'nuevo estado guardado','new_status':req.body.msgStatus,'msg_id': req.params.id});
+	res.status(201).send({ status: 'ok',response: 'nuevo estado guardado','newMsgStatus':req.body.msgStatus,'msgID': req.params.id});
 	};
 
 function listSender(list, msg_id, username) {
@@ -33,7 +33,7 @@ function listSender(list, msg_id, username) {
 			country : list[element].countryCode,
 			type	: (list[element].type == undefined)? username: list[element].type,
 			ttd		: (list[element].ttd == undefined || parseInt(list[element].ttd) == NaN)? 0:parseInt(list[element].ttd),
-			listID : msg_id,
+			listID 	: msg_id,
 			flags	: list[element].flags,
 		}
 		var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
@@ -59,6 +59,5 @@ function singleSender(msg, msg_id, username) {
 			phone	: code+msg.phone,
 			msgID  	: msg_id
 		}
-		console.log("send: ",message);
 		rabbit.send(message);
 }

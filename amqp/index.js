@@ -36,7 +36,7 @@ module.exports.send = function(msg) {
 	
 	//Finalmente enviamos el mensaje:
 		var sms = JSON.stringify(msg);
-		rabbitChannel.sendToQueue('messages', new Buffer(sms), {expires: msg.ttd});
+		rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
 		rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
 		console.log('Sent[*]',sms);
