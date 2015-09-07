@@ -1,9 +1,11 @@
+var config  = require('../config');
+
+
 module.exports.initialize = function() {
 	var MongoClient = require('mongodb').MongoClient;
 	MongoClient.connect(config.oauth2, function(err, database) {
   		if(err) throw err;
-  		db = database;
-  		collection = db.collection('oauth_accesstokens');
+  		accessTokens = database.collection('oauth_accesstokens');
   		log.info("Oauth2 initialized ".yellow);  
 	});
 }
@@ -36,14 +38,15 @@ module.exports.authorise = function(req,res,next) {
  * @param {Function} done
  * @this   OAuth
  */
+ 
 function checkToken (req,res,done) {
-  	collection.find({"accessToken": req.bearerToken},{},{limit:1}).toArray(function(err, token) {
+  	accessTokens.find({"accessToken": req.bearerToken},{},{limit:1}).toArray(function(err, token) {
 
     if (err)
-    	res.status(503).send({ status: 'service_unavailable',response: 'Sorry, try latter.'});
+          res.status(503).send({ status: 'service_unavailable',response: 'Sorry, try latter.'});
 
     if (!token[0])
-      res.status(499).send({ status: 'invalid_token',response: 'The access token provided is invalid.'});
+          res.status(499).send({ status: 'invalid_token',response: 'The access token provided is invalid.'});
     else {
       if (token[0].expires !== null && (!token[0].expires || token[0].expires < new Date())) {
             res.status(498).send({ status: 'invalid_token',response: 'The access token provided has expired.'});
