@@ -1,5 +1,6 @@
 amqp    	= require('amqplib/callback_api');
 var helper 	= require('../helpers');
+var config  = require('../config');
 
 /*
  * Method to connect to the rabitMQ server. Single connection on the poll of connections
