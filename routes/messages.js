@@ -28,15 +28,16 @@ module.exports.get = function(req, res, next) {
 function singleSender(msg, msg_id, username) {
 	var code = (msg.country != undefined)?helper.countryCode(msg.country):"";
 	var message = {
-			user 	: username,
-			payload	: helper.checkMessage(msg.msg),
-			channel : helper.checkChannel(msg.channel),
-			areaCode: (msg.country != undefined)?helper.areaCode(msg.country):"",
-			type	: (msg.type == undefined)? username: msg.type,
-			ttd		: (msg.ttd == undefined || parseInt(msg.ttd) == NaN)? 0:parseInt(msg.ttd),
-			flags	: msg.flags,
-			phone	: code+msg.phone,
-			msgId  	: msg_id
+			user 		: username,
+			payload		: helper.checkMessage(msg.msg),
+			channel 	: helper.checkChannel(msg.channel),
+			areaCode	: (msg.country != undefined)?helper.areaCode(msg.country):"",
+			type		: (msg.type == undefined)? username: msg.type,
+			ttd			: (msg.ttd == undefined || parseInt(msg.ttd) == NaN)? 0:parseInt(msg.ttd),
+			flags		: msg.flags,
+			phone		: code+msg.phone,
+			msgId  		: msg_id,
+			companyId 	: req.user
 		}
 		rabbit.send(message);
 }
