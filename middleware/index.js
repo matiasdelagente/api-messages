@@ -5,7 +5,10 @@ module.exports.message = function(req,res,next) {
  		res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Message'});
  	else if(message.flags == undefined || message.flags == '')
  		res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Flags'});
-	else next();
+	else {
+			req.body.phone = req.body.phone.replace(/\D/g,'');
+			next();
+	}
 }
 
 module.exports.update = function(req,res,next) {
