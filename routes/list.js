@@ -5,15 +5,21 @@
 var hat  	= require('hat').rack();
 var rabbit 	= require('../amqp');
 var helper 	= require('../helpers');
+var messagesModel 	= require('../db/models/messages');
 
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
 	res.status(201).send({ status: 'ok',response: 'procesamiento en curso', 'msgListID': msg_id});
 	listSender(req.body, msg_id, req.user);
-	}
+}
 
 module.exports.get = function(req, res, next) {
-	res.status(201).send({ status: 'not implemented'});
+	messagesModel.getListById(req.params.id,function(list) {
+		if(list !== false)
+			res.status(200).send(list);
+		else
+			res.status(204).send({ status: 'ERROR',response: 'message no encontrado'});
+	});
 }
 
 function listSender(list, msg_id, username) {

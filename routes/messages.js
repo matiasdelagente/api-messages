@@ -19,14 +19,13 @@ module.exports.update = function(req, res, next) {
 	res.status(201).send({response: 'nuevo estado guardado','status':req.body.status,'msgId': req.params.id});
 }
 
-
 module.exports.get = function(req, res, next) {
-	messagesModel.getById(req.params.id,function(user) {
-		if(user !== false)
-			res.status(200).send(user);
+	messagesModel.getById(req.params.id,function(msg) {
+		if(msg !== false)
+			res.status(200).send(msg);
 		else
 			res.status(204).send({ status: 'ERROR',response: 'message no encontrado'});
-		});
+	});
 }
 
 function singleSender(msg, msg_id, username) {
