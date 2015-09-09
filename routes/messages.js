@@ -10,7 +10,6 @@ var messagesModel 	= require('../db/models/messages');
 
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
-	console.log("single sender");
 	singleSender(req.body, msg_id, req.user);
 	res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msg_id});
 }
