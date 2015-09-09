@@ -1,102 +1,27 @@
 {
   "amqp": {
-      "mq-sms": {
-          "addr": "mq-sms01",
+          "addr": "192.168.10.15",
           "user":"admin",
-          "pass":"admin1234",
+          "pass":"2334E8Fx4g9p24g",
           "port":"",
-          "exchange":"buffer"
-        },
-        "mq-sms-nevada": {
-          "addr": "mq-sms-nevada",
-          "user":"admin",
-          "pass":"admin1234",
-          "port":"",
-          "exchange":"buffer"
+          "queues": {
+          "log":"log",
+          "msg":"messages"
         }
     },
-  "clients": {
-      "nevada": {
-        "user":"nevada",
-        "pass":"nevadatest",
-        "amqp":"mq-sms-nevada",
-        "from":"94960",
-        "type_now":["AVISO_COMPRA","EXTRACCION","viacelular"],
-        "op_map": {
-                "C":"c",
-                "M":"m",
-                "P":"p",
-                "N":"n"
-        }
-      },
-      "naranja": {
-        "user":"naranja",
-        "pass":"naranjatest",
-        "amqp":"mq-sms",
-        "from":"44099",
-        "type_now":["COMPRA_TWEEN","EXTRACCION","TRANSFER","BPM_CA_CONFIRMACION_VISITA","BPM_CA_INGRESOSOLICITUD",
-                      "sube"],
-        "op_map": {
-                "37":"c",
-                "9":"m",
-                "1":"p",
-                "8":"n"
-        }
-      },
-        "nacion": {
-          "user":"nacion",
-          "pass":"12nacion34",
-          "amqp":"mq-sms-nevada",
-          "from":"26100",
-          "op_map": {
-                "1":"c",
-                "2":"m",
-                "3":"p",
-                "4":"n"
-        }
-      },
-        "triunfo": {
-        "user":"triunfo",
-        "pass":"seguros",
-        "amqp":"mq-sms-nevada",
-        "from":"26100",
-        "op_map": {
-                "1":"c",
-                "2":"m",
-                "3":"p",
-                "4":"n"
-        }
-      }
-  },
   "app": {
-      "port": "80",
+      "port": "3002",
       "ver": "0.1",
       "defaults": {
             "user": "tween",
             "from": "26100",
             "amqp": "mq-sms01",
-            "trace":"WS_FAKER"
-      }
-    },
-  "mapper": {
-      "sms": {
-        "compania":    "op",
-        "idaviso":     "client_id",
-        "mensaje":     "msg",
-        "prioridad":   "priority",
-        "telefono":    "to",
-        "tipo_aviso":  "type",
-        "usuario":     "user",
-        "pass":        "pass"
-    },
-    "bulk": {
-        "msgId":      "client_id",
-        "fromNum":    "from",
-        "toNum":      "to",
-        "idCarrier":  "op",
-        "msg":        "msg",
-        "type":       "type",
-        "prioridad":  "priority"
-    }
-  }
+            "trace":"API_MESSAGES"
+          }
+      },
+  "db": {
+          "addr":"192.168.10.66",
+          "port":"27017"
+     },
+      "oauth2": "mongodb://192.168.10.66/oauth2"
 }
