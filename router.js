@@ -12,3 +12,4 @@ router.put('/messages/:id', oauth2.authorise,middleware.update,messages.update);
 
 //GET
 router.get('/messages/:id', oauth2.authorise,messages.get);
+router.get('/messages/list/:id', oauth2.authorise,list.get);

@@ -19,5 +19,9 @@
             "trace":"API_MESSAGES"
           }
       },
+  "db": {
+          "addr":"192.168.10.66",
+          "port":"27017"
+     },
       "oauth2": "mongodb://192.168.10.66/oauth2"
 }
