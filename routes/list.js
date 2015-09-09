@@ -8,13 +8,15 @@ var helper 	= require('../helpers');
 
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
-	console.log(req.user);
-	console.log(req.oauth2);
 	res.status(201).send({ status: 'ok',response: 'procesamiento en curso', 'msgListID': msg_id});
 	listSender(req.body, msg_id, req.user);
 	}
 
-	function listSender(list, msg_id, username) {
+module.exports.get = function(req, res, next) {
+	res.status(201).send({ status: 'not implemented'});
+}
+
+function listSender(list, msg_id, username) {
 	var i=0;
 	for(element in list) {
 		 var message = {

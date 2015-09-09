@@ -19,5 +19,9 @@
             "trace":"API_MESSAGES"
             }
       },
+  "db": {
+    "addr":"localhost",
+    "port":"27017"
+     },
   "oauth2": "mongodb://localhost/oauth2"
 }
