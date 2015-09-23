@@ -1,6 +1,6 @@
 {
   "amqp": {
-          "addr": "192.168.10.15",
+          "addr": "localhost",
           "user":"admin",
           "pass":"2334E8Fx4g9p24g",
           "port":"",
