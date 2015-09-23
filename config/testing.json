@@ -1,6 +1,6 @@
 {
   "amqp": {
-          "addr": "192.168.10.15",
+          "addr": "localhost",
           "user":"admin",
           "pass":"2334E8Fx4g9p24g",
           "port":"",
@@ -20,8 +20,8 @@
           }
       },
   "db": {
-          "addr":"192.168.10.66",
+          "addr":"mongodb-testing",
           "port":"27017"
      },
-      "oauth2": "mongodb://192.168.10.66/oauth2"
+      "oauth2": "mongodb://mongodb-testing/oauth2"
 }
