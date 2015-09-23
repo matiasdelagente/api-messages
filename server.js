@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 
 //Application router:
 require('./router');
-app.use('/api/'+config.app.ver ,router);
+app.use('/v'+config.app.ver ,router);
 
 app.use(function(err, req, res, next) {
   if(err.status == 400)
