@@ -1,6 +1,6 @@
 {
   "amqp": {
-          "addr": "ws-push-testing",
+          "addr": "192.168.10.15",
           "user":"admin",
           "pass":"2334E8Fx4g9p24g",
           "port":"",
@@ -11,7 +11,7 @@
     },
   "app": {
       "port": "3002",
-      "ver": "1",
+      "ver": "0.1",
       "defaults": {
             "user": "tween",
             "from": "26100",
@@ -20,8 +20,8 @@
           }
       },
   "db": {
-          "addr":"mongodb-testing",
+          "addr":"192.168.10.66",
           "port":"27017"
      },
-      "oauth2": "mongodb://mongodb-testing/oauth2"
+      "oauth2": "mongodb://192.168.10.66/oauth2"
 }
