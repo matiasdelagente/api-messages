@@ -1,9 +1,9 @@
-amqp    	= require('amqplib/callback_api');
+var amqp    = require('amqplib/callback_api');
 var helper 	= require('../helpers');
 var config  = require('../config');
 
 /*
- * Method to connect to the rabitMQ server. Single connection on the poll of connections
+ * Method to connect to the rabitMQ server. Single connection in the poll of connections
  * @method connect
  * @param {} server (nameserv or ip)
  * @return 
@@ -34,20 +34,20 @@ module.exports.send = function(msg) {
 	msg.timestamp	= {received : new Date().getTime()};
 	//Seteamos el estado:
 	msg.status		= 0;
-	
-	//Finalmente enviamos el mensaje:
-		var sms = JSON.stringify(msg);
-		rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
-		rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
-		console.log('Sent[*]',sms);
+	//Finalmente enviamos el mensaje:
+	var sms = JSON.stringify(msg);
+	rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
+	rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
+
+	console.log('Sent[*]',msg);
 }
 
 /*
- * Send a status update to RabbitMQ server - Makes the field name mapping
+ * Send a status update message to RabbitMQ server 
  * @method send
- * @param {} msg
- * @return 
+ * @param {} state
+ * @return
  */
 module.exports.update = function(state) {
 		rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});

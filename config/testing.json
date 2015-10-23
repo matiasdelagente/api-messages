@@ -1,6 +1,6 @@
 {
   "amqp": {
-          "addr": "localhost",
+          "addr": "ws-push-testing",
           "user":"admin",
           "pass":"2334E8Fx4g9p24g",
           "port":"",
