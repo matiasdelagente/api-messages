@@ -2,7 +2,7 @@ var validator = require("validator");
 
 module.exports.message = function(req,res,next) {
 	var message = req.body;
-	if(message.phone == undefined || message.phone == '' && validator.isDecimal(message.phone) && message.phone.length <= 15)
+	if(message.phone == undefined || message.phone == '' || !validator.isDecimal(message.phone) || message.phone.length >= 20)
  		res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Phone'});
  	else if(message.msg == undefined || message.msg == '')
  		res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Message'});
