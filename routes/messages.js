@@ -10,7 +10,7 @@ var messagesModel 	= require('../db/models/messages');
 
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
-	singleSender(req.body, msg_id, req.user);
+	singleSender(req.body, msg_id, req.companyId);
 	res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msg_id});
 }
 
@@ -28,10 +28,9 @@ module.exports.get = function(req, res, next) {
 	});
 }
 
-function singleSender(msg, msg_id, username) {
+function singleSender(msg, msg_id, company) {
 	var code = (msg.country != undefined)?helper.countryCode(msg.country):"";
 	var message = {
-			user 		: username,
 			payload		: helper.checkMessage(msg.msg),
 			channel 	: helper.checkChannel(msg.channel),
 			areaCode	: (msg.country != undefined)?helper.areaCode(msg.country):"",
@@ -40,7 +39,7 @@ function singleSender(msg, msg_id, username) {
 			flags		: msg.flags,
 			phone		: code+msg.phone,
 			msgId  		: msg_id,
-			companyId 	: req.user
+			companyId 	: company
 		}
 		rabbit.send(message);
 }
