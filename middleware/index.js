@@ -20,3 +20,10 @@ module.exports.update = function(req,res,next) {
  		res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed status'});
 	else next();
 }
+
+module.exports.get = function(req,res,next) {
+	var id = req.params.id;
+	if(!(id.length >= 32) || !validator.isAlphanumeric(id))
+ 		res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed msgId'});
+	else next();
+}

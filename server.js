@@ -6,6 +6,9 @@
 //newRelic plugin:
 require('newrelic');
 
+//mongoDB:
+require('./db');
+
 var http	= require('http');
 var config  = require('./config');
 
