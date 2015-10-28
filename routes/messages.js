@@ -29,11 +29,11 @@ module.exports.get = function(req, res, next) {
 }
 
 function singleSender(msg, msg_id, company) {
-	var code = (msg.country != undefined)?helper.countryCode(msg.country):"";
+	var code = (msg.countryCode != undefined)?helper.countryCode(msg.countryCode):"";
 	var message = {
 			payload		: helper.checkMessage(msg.msg),
 			channel 	: helper.checkChannel(msg.channel),
-			areaCode	: (msg.country != undefined)?helper.areaCode(msg.country):"",
+			country		: (msg.countryCode != undefined)?msg.countryCode:"",
 			type		: (msg.type == undefined)? username: msg.type,
 			ttd			: (msg.ttd == undefined || parseInt(msg.ttd) == NaN)? 0:parseInt(msg.ttd),
 			flags		: msg.flags,
