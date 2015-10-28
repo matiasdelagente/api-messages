@@ -41,10 +41,12 @@ module.exports.checkMessage = function(sms){
  */
  module.exports.countryCode = function(sentCode) {
 
- 	for( code in codes) {
+ 	for(code in codes) {
+ 		console.log("countryCode: ",codes[code]);
  		if (codes[code].ISO == sentCode) {
  			return codes[code].CODE; 
  		}
+ 		return "";
  	}
 }
 
