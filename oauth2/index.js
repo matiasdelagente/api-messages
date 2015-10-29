@@ -54,6 +54,7 @@ function checkToken (req,res,done) {
     else {
     	// Expose params
     	req.oauth2 = { bearerToken: token[0] };
+      req.username  = token[0].clientId;
     	req.companyId = token[0].userId;
     	done();
 		}
