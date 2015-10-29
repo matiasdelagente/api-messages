@@ -10,7 +10,7 @@ var messagesModel 	= require('../db/models/messages');
 
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
-	singleSender(req.body, msg_id, req.companyId);
+	singleSender(req, msg_id, req.companyId);
 	res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msg_id});
 }
 
@@ -28,14 +28,18 @@ module.exports.get = function(req, res, next) {
 	});
 }
 
-function singleSender(msg, msg_id, company) {
+function singleSender(req, msg_id) {
+	var msg = req.body;
+	var company = req.companyId;
+	var username = req.username;
+
 	var code = (msg.countryCode != undefined)?helper.countryCode(msg.countryCode):"";
 	var message = {
 			payload		: helper.checkMessage(msg.msg),
 			channel 	: helper.checkChannel(msg.channel),
 			country		: (msg.countryCode != undefined)?msg.countryCode:"",
-			type		: (msg.type == undefined)? username: msg.type,
-			ttd			: (msg.ttd == undefined || parseInt(msg.ttd) == NaN)? 0:parseInt(msg.ttd),
+			type		: (msg.type === undefined)? username: msg.type,
+			ttd			: (msg.ttd === undefined || parseInt(msg.ttd) == NaN)? 0:parseInt(msg.ttd),
 			flags		: msg.flags,
 			phone		: code+msg.phone,
 			msgId  		: msg_id,
