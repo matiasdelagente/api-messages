@@ -10,7 +10,7 @@ var messagesModel 	= require('../db/models/messages');
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
 	res.status(201).send({ status: 'ok',response: 'procesamiento en curso', 'msgListID': msg_id});
-	listSender(req, msg_id, req.user);
+	listSender(req, msg_id);
 }
 
 module.exports.get = function(req, res, next) {
@@ -22,7 +22,7 @@ module.exports.get = function(req, res, next) {
 	});
 }
 
-function listSender(req, msg_id, username) {
+function listSender(req, msg_id) {
 	var i=0;
 	var list = req.body;
 	var company = req.companyId;
