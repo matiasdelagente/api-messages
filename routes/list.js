@@ -10,7 +10,7 @@ var messagesModel 	= require('../db/models/messages');
 module.exports.send = function(req, res, next) {
 	var msg_id=hat(60,36);
 	res.status(201).send({ status: 'ok',response: 'procesamiento en curso', 'msgListID': msg_id});
-	listSender(req.body, msg_id, req.user);
+	listSender(req, msg_id, req.user);
 }
 
 module.exports.get = function(req, res, next) {
@@ -22,8 +22,12 @@ module.exports.get = function(req, res, next) {
 	});
 }
 
-function listSender(list, msg_id, username) {
+function listSender(req, msg_id, username) {
 	var i=0;
+	var list = req.body;
+	var company = req.companyId;
+	var username = req.username;
+
 	for(element in list) {
 		 var message = {
 			user 		: username,
@@ -34,7 +38,7 @@ function listSender(list, msg_id, username) {
 			ttd			: (list[element].ttd == undefined || parseInt(list[element].ttd) == NaN)? 0:parseInt(list[element].ttd),
 			listId 		: msg_id,
 			flags		: list[element].flags,
-			companyId 	: req.user
+			companyId 	: company
 
 		}
 		var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
