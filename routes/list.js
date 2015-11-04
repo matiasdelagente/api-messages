@@ -5,7 +5,7 @@
 var hat  	= require('hat').rack();
 var rabbit 	= require('../amqp');
 var helper 	= require('../helpers');
-var config  = require('./config');
+var config  = require('../config');
 var messagesModel 	= require('../db/models/messages');
 
 module.exports.send = function(req, res, next) {

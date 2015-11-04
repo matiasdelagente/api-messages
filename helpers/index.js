@@ -5,7 +5,7 @@
  * @return ConditionalExpression
  */
 var codes 	= require('./country.json');
-var config  = require('./config');
+var config  = require('../config');
 
 
 module.exports.checkOp = function(msg) {
@@ -60,4 +60,26 @@ module.exports.checkMessage = function(sms){
  */
  module.exports.checkChannel = function(channel) {
 	return (channel !== undefined)?channel:config.app.defaults.channel;
-};
+}
+
+/**
+ * Description
+ * @method timestampType
+ * @param {} state
+ * @return json
+ */
+ module.exports.timestampByState = function(newState) {
+	var states = {
+			'0':'recived',
+			'1':'processing',
+			'2':'delivered',
+			'3':'acknowledged',
+			'4':'read',
+			'5':'spam'
+			}
+			for(state in states) {
+				if(state == newState)
+					return states[state];
+			}
+			return 'error';
+}
