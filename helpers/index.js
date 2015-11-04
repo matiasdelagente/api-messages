@@ -4,7 +4,9 @@
  * @param {} msg
  * @return ConditionalExpression
  */
-codes = require('./country.json');
+var codes 	= require('./country.json');
+var config  = require('./config');
+
 
 module.exports.checkOp = function(msg) {
 
@@ -57,5 +59,5 @@ module.exports.checkMessage = function(sms){
  * @return Literal
  */
  module.exports.checkChannel = function(channel) {
-	return channel;
+	return (channel !== undefined)?channel:config.app.defaults.channel;
 };
