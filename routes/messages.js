@@ -5,6 +5,7 @@
 var rabbit 			= require('../amqp');
 var helper 			= require('../helpers');
 var hat  			= require('hat').rack();
+var config  		= require('./config');
 var messagesModel 	= require('../db/models/messages');
 
 
@@ -40,7 +41,7 @@ function singleSender(req, msg_id) {
 			country		: (msg.countryCode != undefined)?msg.countryCode:"",
 			type		: (msg.type === undefined)? username: msg.type,
 			ttd			: (msg.ttd === undefined || parseInt(msg.ttd) == NaN)? 0:parseInt(msg.ttd),
-			flags		: msg.flags,
+			flags		: (msg.flags === undefined)? config.app.defaults.flags:msg.flags,
 			phone		: code+msg.phone,
 			msgId  		: msg_id,
 			companyId 	: company

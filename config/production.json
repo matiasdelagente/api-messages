@@ -1,3 +1,4 @@
+,
 {
   "amqp": {
           "addr": "mq-push",
@@ -16,7 +17,9 @@
             "user": "tween",
             "from": "26100",
             "amqp": "mq-sms01",
-            "trace":"API_MESSAGES"
+            "trace":"API_MESSAGES",
+            "flags":"3",
+            "channel": "t"
           }
       },
   "db": {
