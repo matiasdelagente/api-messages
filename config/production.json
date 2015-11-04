@@ -1,4 +1,3 @@
-,
 {
   "amqp": {
           "addr": "mq-push",
