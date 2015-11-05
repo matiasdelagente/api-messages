@@ -83,3 +83,22 @@ module.exports.checkMessage = function(sms){
 			}
 			return 'error';
 }
+
+/**
+ * Description
+ * @method timestampType
+ * @param {} state
+ * @return json
+ */
+ module.exports.fillCapturedExtras = function(captured) {
+		// si son sms que la app esta enviando como sms choreados, guardamos extras
+			var extra={};
+			if(captured.companyId	!== 	undefined) 	extra.companyId=captured.companyId;
+			if(captured.from 		!== 	undefined) 	extra.from=captured.from;
+			if(captured.type 		!== 	undefined)	extra.type=captured.type;
+			if(captured.created 	!== 	undefined)	extra.created=captured.created;
+			if(captured.deleted 	!== 	undefined)	extra.deleted=captured.deleted;
+			if(captured.status 		!== 	undefined)	extra.status=captured.status;
+			
+			return extra;
+}
