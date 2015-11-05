@@ -1,6 +1,6 @@
 {
   "amqp": {
-          "addr": "localhost",
+          "addr": "mq-push",
           "user":"admin",
           "pass":"2334E8Fx4g9p24g",
           "port":"",
@@ -22,8 +22,8 @@
             }
       },
   "db": {
-    "addr":"localhost",
+    "addr":"mongodb0",
     "port":"27017"
      },
-  "oauth2": "mongodb://localhost/oauth2"
+  "oauth2": "mongodb://mongodb0/oauth2"
 }

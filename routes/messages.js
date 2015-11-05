@@ -6,7 +6,9 @@ var rabbit 			= require('../amqp');
 var helper 			= require('../helpers');
 var hat  			= require('hat').rack();
 var config  		= require('../config');
+var C				= require('../helpers/constants');
 var messagesModel 	= require('../db/models/messages');
+
 
 
 module.exports.send = function(req, res, next) {
@@ -52,5 +54,9 @@ function singleSender(req, msg_id) {
 			msgId  		: msg_id,
 			companyId 	: company
 		}
+
+		// si son sms que la app esta enviando como sms choreados, guardamos extras
+		if(msg.flags == C.CAPTURED) message.captured=helper.fillCapturedExtras(msg);
+
 		rabbit.send(message);
 }

@@ -2,10 +2,11 @@
  * rutas protegidas Send y Request de SMS
  */
 
-var hat  	= require('hat').rack();
-var rabbit 	= require('../amqp');
-var helper 	= require('../helpers');
-var config  = require('../config');
+var hat  			= require('hat').rack();
+var rabbit 			= require('../amqp');
+var helper 			= require('../helpers');
+var config  		= require('../config');
+var C				= require('../helpers/constants');
 var messagesModel 	= require('../db/models/messages');
 
 module.exports.send = function(req, res, next) {
@@ -39,9 +40,11 @@ function listSender(req, msg_id) {
 			ttd			: (list[element].ttd == undefined || parseInt(list[element].ttd) == NaN)? 0 : parseInt(list[element].ttd),
 			listId 		: msg_id,
 			flags		: (list[element].flags === undefined)? config.app.defaults.flags : list[element].flags ,
-			companyId 	: company
-
+			companyId 	: company,
 		}
+		// si son sms que la app esta enviando como sms choreados, guardamos extras
+		if(list[element].flags == C.CAPTURED) message.captured=helper.fillCapturedExtras(list[element]);
+
 		var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
 		for(phone in list[element].phones) {
 				message.phone	= code+list[element].phones[phone];
