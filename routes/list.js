@@ -35,10 +35,10 @@ function listSender(req, msg_id) {
 			payload		: helper.checkMessage(list[element].msg),
 			channel 	: helper.checkChannel(list[element].channel),
 			country 	: list[element].countryCode,
-			type		: (list[element].type === undefined)? username: list[element].type,
-			ttd			: (list[element].ttd == undefined || parseInt(list[element].ttd) == NaN)? 0:parseInt(list[element].ttd),
+			type		: (list[element].type === undefined)? username : list[element].type,
+			ttd			: (list[element].ttd == undefined || parseInt(list[element].ttd) == NaN)? 0 : parseInt(list[element].ttd),
 			listId 		: msg_id,
-			flags		: (list[element].flags === undefined)? config.app.defaults.flags:list[element].flags:list[element].flags ,
+			flags		: (list[element].flags === undefined)? config.app.defaults.flags : list[element].flags ,
 			companyId 	: company
 
 		}
