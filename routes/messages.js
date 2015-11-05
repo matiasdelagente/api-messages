@@ -16,13 +16,13 @@ module.exports.send = function(req, res, next) {
 }
 
 module.exports.update = function(req, res, next) {
-	// build the update object
-	var updateMsg = {'msgId':req.params.id,'status':req.body.status, 'timestamp':{}};
-	// add the timestamp to the update object by state number
-	updateMsg.timestamp = { helper.timestampByState(req.body.status) : new Date().getTime()};
-	// send the update object to rabbitmq
+	//build the update object
+	var updateMsg = {'msgId':req.params.id,'status':req.body.status, timestamp: {}};
+	//add the timestamp to the update object by state number
+	updateMsg.timestamp[helper.timestampByState(req.body.status)] = new Date().getTime();
+	//send the update object to rabbitmq
 	rabbit.update(updateMsg);
-	// finally send the http response
+	//finally send the http response
 	res.status(201).send({response: 'nuevo estado guardado','status':req.body.status,'msgId': req.params.id});
 }
 
