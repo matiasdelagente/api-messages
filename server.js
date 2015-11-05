@@ -4,7 +4,7 @@
  */
 
 //newRelic plugin:
-require('newrelic');
+//require('newrelic');
 
 //mongoDB:
 require('./db');
