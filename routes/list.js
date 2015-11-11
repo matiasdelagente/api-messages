@@ -48,7 +48,7 @@ function listSender(req, msg_id) {
 		var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
 		for(phone in list[element].phones) {
 				message.phone	= code+list[element].phones[phone];
-				message.msgId  	= msg_id+'-'+i;
+				message.msgId  	= msg_id+'000'+i;
 				rabbit.send(message);
 				i++;
 			}
