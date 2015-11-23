@@ -1,29 +1,34 @@
 {
-  "amqp": {
-          "addr": "mq-push",
-          "user":"admin",
-          "pass":"2334E8Fx4g9p24g",
-          "port":"",
-          "queues": {
-          "log":"log",
-          "msg":"messages"
-        }
-    },
-  "app": {
-      "port": "3002",
-      "ver": "1",
-      "defaults": {
-            "user": "tween",
-            "from": "26100",
-            "amqp": "mq-sms01",
-            "trace":"API_MESSAGES",
-            "flags":"3",
-            "channel": "t"
-          }
-      },
-  "db": {
-          "addr":"mongodb",
-          "port":"27017"
-     },
-      "oauth2": "mongodb://192.168.10.66/oauth2"
+  "amqp":
+  {
+    "addr": "mq-push",
+    "user":"admin",
+    "pass":"2334E8Fx4g9p24g",
+    "port":"",
+    "queues":
+    {
+      "log":"log",
+      "msg":"messages"
+    }
+  },
+  "app":
+  {
+    "port": "3002",
+    "ver": "1",
+    "defaults":
+    {
+      "user": "tween",
+      "from": "26100",
+      "amqp": "mq-sms01",
+      "trace":"API_MESSAGES",
+      "flags":"3",
+      "channel": "t"
+    }
+  },
+  "db":
+  {
+    "addr":"mongodb",
+    "port":"27017"
+  },
+  "oauth2": "mongodb://mongodb/oauth2"
 }
