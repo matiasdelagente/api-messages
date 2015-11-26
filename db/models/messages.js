@@ -16,3 +16,16 @@ module.exports.getListById = function(id, cb) {
     (items.length > 0)?cb(items):cb(false);
    });
 }
+
+module.exports.getByCompanyId = function(options, cb) {
+  var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
+  var perPage = options.limit;
+  var collection = db.collection('messages');
+
+  collection.find({companyId: options.companyId}, {}, {limit: perPage})
+    .sort({ $natural: 1 })
+    .skip(pageNumber)
+    .toArray(function(err, items) {
+      (items.length > 0) ? cb(items):cb(false);
+    });
+}
