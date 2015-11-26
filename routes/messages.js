@@ -28,6 +28,15 @@ module.exports.update = function(req, res, next) {
 	res.status(201).send({response: 'nuevo estado guardado','status':req.body.status,'msgId': req.params.id});
 }
 
+module.exports.delete = function(req, res, next) {
+	//build the update object
+	var updateMsg = {'msgId':req.params.id, 'disabled': true,timestamp: {disabled: new Date().getTime()} };
+	//send the update object to rabbitmq
+	rabbit.update(updateMsg);
+	//finally send the http response
+	res.status(201).send({response: 'mensaje borrado','status':req.body.status,'msgId': req.params.id});
+}
+
 module.exports.get = function(req, res, next) {
 	messagesModel.getById(req.params.id,function(msg) {
 		if(msg !== false)
