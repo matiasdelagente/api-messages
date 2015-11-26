@@ -46,6 +46,16 @@ module.exports.get = function(req, res, next) {
 	});
 }
 
+module.exports.getByCompanyId = function(req, res, next) {
+	console.log('routes messages');
+	messagesModel.getByCompanyId(req.query,function(msgs) {
+		if(msgs !== false)
+			res.status(200).send(msgs);
+		else
+			res.status(204).send({ status: 'ERROR',response: 'mensajes no encontrados para la compañía ' + req.query.companyId});
+	});
+}
+
 function singleSender(req, msg_id) {
 	var msg = req.body;
 	var company = req.companyId;

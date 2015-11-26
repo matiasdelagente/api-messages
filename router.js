@@ -13,6 +13,7 @@ router.put('/messages/:id', oauth2.authorise,middleware.update,messages.update);
 //GET
 router.get('/messages/list/:id', oauth2.authorise,list.get);
 router.get('/messages/:id', oauth2.authorise,middleware.get,messages.get);
+router.get('/messages', oauth2.authorise,messages.getByCompanyId);
 
 //DELETE
 router.delete('/messages/:id', oauth2.authorise, messages.delete);
