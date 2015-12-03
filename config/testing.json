@@ -1,7 +1,7 @@
 {
   "amqp":
   {
-    "addr": "ws-push-testing",
+    "addr": "mq-push-testing",
     "user":"admin",
     "pass":"admin1234",
     "port":"",
@@ -19,7 +19,7 @@
     {
       "user": "tween",
       "from": "26100",
-      "amqp": "mq-sms01",
+      "amqp": "mq-push-testing",
       "trace":"API_MESSAGES",
       "flags":"3",
       "channel": "t"
