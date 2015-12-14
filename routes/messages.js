@@ -34,7 +34,7 @@ module.exports.delete = function(req, res, next) {
 	//send the update object to rabbitmq
 	rabbit.update(updateMsg);
 	//finally send the http response
-	res.status(201).send({response: 'mensaje borrado','status':req.body.status,'msgId': req.params.id});
+	res.status(200).send({response: 'mensaje borrado','status':req.body.status,'msgId': req.params.id});
 }
 
 module.exports.get = function(req, res, next) {
