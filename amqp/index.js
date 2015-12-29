@@ -6,7 +6,7 @@ var config  = require('../config');
  * Method to connect to the rabitMQ server. Single connection in the poll of connections
  * @method connect
  * @param {} server (nameserv or ip)
- * @return 
+ * @return
  */
 module.exports.connect= function(server) {
 		amqp.connect('amqp://'+server.user+':'+server.pass+'@'+server.addr,function(err,conn) {
@@ -16,7 +16,7 @@ module.exports.connect= function(server) {
 			   		if (err !== null) return log.error(err);
 			   		rabbitChannel = ch;
 			    	ch.assertQueue(server.queues.log,{ 'durable': true ,'maxPriority': 10},function(err,ok){console.log(ok)});
-			    	ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)}); 
+			    	ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)});
 			  });
 			});
 }
@@ -25,9 +25,9 @@ module.exports.connect= function(server) {
  * Send a message to RabbitMQ server - Makes the field name mapping
  * @method send
  * @param {} msg
- * @return 
+ * @return
  */
-module.exports.send = function(msg) {
+module.exports.send = function(msg,send) {
 	//Agregamos trace:
 	msg.trace 		= config.app.defaults.trace;
 	//Seteamos timestamp:
@@ -37,6 +37,7 @@ module.exports.send = function(msg) {
 
 	//Finalmente enviamos el mensaje:
 	var sms = JSON.stringify(msg);
+	if(send)
 	rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
 	rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
@@ -44,7 +45,7 @@ module.exports.send = function(msg) {
 }
 
 /*
- * Send a status update message to RabbitMQ server 
+ * Send a status update message to RabbitMQ server
  * @method send
  * @param {} state
  * @return

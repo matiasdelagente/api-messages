@@ -43,13 +43,19 @@ function listSender(req, msg_id) {
 			companyId 	: company,
 		}
 		// si son sms que la app esta enviando como sms choreados, guardamos extras
-		if(list[element].flags == C.CAPTURED) message.captured=helper.fillCapturedExtras(list[element]);
+		var send=true;
+		if(list[element].flags == C.CAPTURED)
+		{
+			message.captured=helper.fillCapturedExtras(list[element]);
+			send = false;
+
+		}
 
 		var code = (list[element].country != undefined)?helper.countryCode(list[element].country):"";
 		for(phone in list[element].phones) {
 				message.phone	= code+list[element].phones[phone];
 				message.msgId  	= msg_id+'000'+i;
-				rabbit.send(message);
+				rabbit.send(message,send);
 				i++;
 			}
 		}
