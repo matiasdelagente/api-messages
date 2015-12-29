@@ -84,7 +84,11 @@ function singleSender(req, msg_id) {
 		}
 
 		// si son sms que la app esta enviando como sms choreados, guardamos extras
-		if(msg.flags == C.CAPTURED) message.captured=helper.fillCapturedExtras(msg);
+		var send = true;
+		if(msg.flags == C.CAPTURED){
+			message.captured=helper.fillCapturedExtras(msg);
+			var send = false;
+		}
 
-		rabbit.send(message);
+		rabbit.send(message, send);
 }
