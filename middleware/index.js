@@ -16,7 +16,7 @@ module.exports.message = function(req,res,next) {
 module.exports.update = function(req,res,next) {
 	var message = req.body;
 	if(message.status == undefined || Math.abs(message.status) > 5)
- 		res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed status'});
+ 		res.status(422).send({ type: 'Unprocessable request', description: 'Missing/malformed status'});
 	else next();
 }
 
