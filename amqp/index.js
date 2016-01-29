@@ -1,5 +1,5 @@
 var amqp    = require('amqplib/callback_api');
-var helper 	= require('../helpers');
+var helper  = require('../helpers');
 var config  = require('../config');
 
 /*
@@ -9,16 +9,16 @@ var config  = require('../config');
  * @return
  */
 module.exports.connect= function(server) {
-		amqp.connect('amqp://'+server.user+':'+server.pass+'@'+server.addr,function(err,conn) {
-			  if (err !== null) return log.error(err);
+    amqp.connect('amqp://'+server.user+':'+server.pass+'@'+server.addr,function(err,conn) {
+        if (err !== null) return log.error(err);
 
-			   conn.createChannel(function(err,ch) {
-			   		if (err !== null) return log.error(err);
-			   		rabbitChannel = ch;
-			    	ch.assertQueue(server.queues.log,{ 'durable': true ,'maxPriority': 10},function(err,ok){console.log(ok)});
-			    	ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)});
-			  });
-			});
+         conn.createChannel(function(err,ch) {
+            if (err !== null) return log.error(err);
+            rabbitChannel = ch;
+            ch.assertQueue(server.queues.log,{ 'durable': true ,'maxPriority': 10},function(err,ok){console.log(ok)});
+            ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)});
+        });
+      });
 }
 
 /*
@@ -28,20 +28,20 @@ module.exports.connect= function(server) {
  * @return
  */
 module.exports.send = function(msg,send) {
-	//Agregamos trace:
-	msg.trace 		= config.app.defaults.trace;
-	//Seteamos timestamp:
-	msg.timestamp	= {received : new Date().getTime()};
-	//Seteamos el estado:
-	msg.status		= 0;
+  // Agregamos trace:
+  msg.trace     = config.app.defaults.trace;
+  //Seteamos timestamp:
+  msg.timestamp = {received : new Date().getTime()};
+  //Seteamos el estado:
+  msg.status    = 0;
 
-	//Finalmente enviamos el mensaje:
-	var sms = JSON.stringify(msg);
-	if(send)
-	rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
-	rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
+  //Finalmente enviamos el mensaje:
+  var sms = JSON.stringify(msg);
+  if(send)
+  rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
+  rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
-	console.log('Sent[*]',msg);
+  console.log('Sent[*]', msg);
 }
 
 /*
@@ -51,6 +51,6 @@ module.exports.send = function(msg,send) {
  * @return
  */
 module.exports.update = function(state) {
-		rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
-		console.log('Sent[*]',state);
+    rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
+    console.log('Sent[*]',state);
 }
