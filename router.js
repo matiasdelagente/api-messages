@@ -9,6 +9,7 @@ router.post('/messages', oauth2.authorise, middleware.message, messages.send);
 
 //PUT
 router.put('/messages/:id', oauth2.authorise,middleware.update, messages.update);
+router.put('/messages', oauth2.authorise, middleware.updateCollection, messages.updateCollection);
 
 //GET
 router.get('/messages/list/:id', oauth2.authorise,list.get);

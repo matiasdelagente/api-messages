@@ -17,6 +17,35 @@ module.exports.send = function(req, res, next){
   res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msg_id});
 }
 
+module.exports.updateCollection = function(req, res, next){
+  var collection = req.body,
+      totalMessages = collection.length,
+      msg = ''
+      updateMsg = {},
+      status = {};
+
+  for (var i = 0; i < totalMessages; i++) {
+    msg = collection[i];
+    //build the update object
+    updateMsg = {'msgId': msg.id, 'status': msg.status},
+    status = helper.timestampByState(msg.status);
+    if(status !== "error")
+    {
+      if(!updateMsg.hasOwnProperty("timestamp")) updateMsg.timestamp = {};
+      // add the timestamp to the update object by state number
+      updateMsg.timestamp[status] = new Date().getTime();
+      // send the update object to rabbitmq
+      rabbit.update(updateMsg);
+      // finally send the http response
+      res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
+    }
+    else
+    {
+      res.status(204).send({status: 'ERROR', response: 'status inválido'});
+    }
+  };
+}
+
 module.exports.update = function(req, res, next){
 
   //build the update object
@@ -29,7 +58,7 @@ module.exports.update = function(req, res, next){
     // add the timestamp to the update object by state number
     updateMsg.timestamp[status] = new Date().getTime();
     // send the update object to rabbitmq
-    console.log("updating message: " + JSON.stringify(updateMsg));
+    console.log("Updating message: " + JSON.stringify(updateMsg));
     rabbit.update(updateMsg);
     // finally send the http response
     res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
