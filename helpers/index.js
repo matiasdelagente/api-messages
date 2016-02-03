@@ -4,13 +4,13 @@
  * @param {} msg
  * @return ConditionalExpression
  */
-var codes 	= require('./country.json');
+var codes   = require('./country.json');
 var config  = require('../config');
 
 
 module.exports.checkOp = function(msg) {
 
-	return (conf.clients[msg.user].op_map && conf.clients[msg.user].op_map[msg.op]) ? conf.clients[msg.user].op_map[msg.op]: 'g';
+  return (conf.clients[msg.user].op_map && conf.clients[msg.user].op_map[msg.op]) ? conf.clients[msg.user].op_map[msg.op]: 'g';
 }
 
 /**
@@ -29,9 +29,9 @@ module.exports.userFrom = function(user) {
  * @return ConditionalExpression
  */
 module.exports.checkMessage = function(sms){
-	var text;
-	(!sms || sms == undefined)?  text = "" : text = sms.substring(0, 160);
-	return text;
+  var text;
+  (!sms || sms == undefined)?  text = "" : text = sms.substring(0, 160);
+  return text;
 };
 
 /**
@@ -43,12 +43,12 @@ module.exports.checkMessage = function(sms){
  */
  module.exports.countryCode = function(sentCode) {
 
- 	for(code in codes) {
- 		if (codes[code].ISO == sentCode) {
- 			return codes[code].CODE; 
- 		}
- 		return "";
- 	}
+  for(code in codes) {
+    if (codes[code].ISO == sentCode) {
+      return codes[code].CODE;
+    }
+    return "";
+  }
 }
 
 /**
@@ -59,7 +59,7 @@ module.exports.checkMessage = function(sms){
  * @return Literal
  */
  module.exports.checkChannel = function(channel) {
-	return (channel !== undefined)?channel:config.app.defaults.channel;
+  return (channel !== undefined) ? channel : config.app.defaults.channel;
 }
 
 /**
@@ -69,19 +69,19 @@ module.exports.checkMessage = function(sms){
  * @return json
  */
  module.exports.timestampByState = function(newState) {
-	var states = {
-			'0':'recived',
-			'1':'processing',
-			'2':'delivered',
-			'3':'acknowledged',
-			'4':'read',
-			'5':'spam'
-			}
-			for(state in states) {
-				if(state == newState)
-					return states[state];
-			}
-			return 'error';
+  var states = {
+      '0':'recived',
+      '1':'processing',
+      '2':'delivered',
+      '3':'acknowledged',
+      '4':'read',
+      '5':'spam'
+      }
+      for(state in states) {
+        if(state == newState)
+          return states[state];
+      }
+      return 'error';
 }
 
 /**
@@ -91,14 +91,15 @@ module.exports.checkMessage = function(sms){
  * @return json
  */
  module.exports.fillCapturedExtras = function(captured) {
-		// si son sms que la app esta enviando como sms choreados, guardamos extras
-			var extra={};
-			if(captured.companyId	!== 	undefined) 	extra.companyId=captured.companyId;
-			if(captured.from 		!== 	undefined) 	extra.from=captured.from;
-			if(captured.type 		!== 	undefined)	extra.type=captured.type;
-			if(captured.created 	!== 	undefined)	extra.created=captured.created;
-			if(captured.deleted 	!== 	undefined)	extra.deleted=captured.deleted;
-			if(captured.status 		!== 	undefined)	extra.status=captured.status;
-			
-			return extra;
+    // si son sms que la app esta enviando como sms choreados, guardamos extras
+      var extra = {};
+
+      if(captured.companyId !== undefined) extra.companyId=captured.companyId;
+      if(captured.from    !== undefined) extra.from=captured.from;
+      if(captured.type    !== undefined) extra.type=captured.type;
+      if(captured.created !== undefined) extra.created=captured.created;
+      if(captured.deleted !== undefined) extra.deleted=captured.deleted;
+      if(captured.status  !== undefined) extra.status=captured.status;
+
+      return extra;
 }
