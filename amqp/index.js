@@ -1,55 +1,56 @@
 var amqp    = require('amqplib/callback_api');
-var helper 	= require('../helpers');
+var helper  = require('../helpers');
 var config  = require('../config');
 
 /*
  * Method to connect to the rabitMQ server. Single connection in the poll of connections
  * @method connect
  * @param {} server (nameserv or ip)
- * @return 
+ * @return
  */
 module.exports.connect= function(server) {
-		amqp.connect('amqp://'+server.user+':'+server.pass+'@'+server.addr,function(err,conn) {
-			  if (err !== null) return log.error(err);
+    amqp.connect('amqp://'+server.user+':'+server.pass+'@'+server.addr,function(err,conn) {
+        if (err !== null) return log.error(err);
 
-			   conn.createChannel(function(err,ch) {
-			   		if (err !== null) return log.error(err);
-			   		rabbitChannel = ch;
-			    	ch.assertQueue(server.queues.log,{ 'durable': true ,'maxPriority': 10},function(err,ok){console.log(ok)});
-			    	ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)}); 
-			  });
-			});
+         conn.createChannel(function(err,ch) {
+            if (err !== null) return log.error(err);
+            rabbitChannel = ch;
+            ch.assertQueue(server.queues.log,{ 'durable': true ,'maxPriority': 10},function(err,ok){console.log(ok)});
+            ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)});
+        });
+      });
 }
 
 /*
  * Send a message to RabbitMQ server - Makes the field name mapping
  * @method send
  * @param {} msg
- * @return 
+ * @return
  */
-module.exports.send = function(msg) {
-	//Agregamos trace:
-	msg.trace 		= config.app.defaults.trace;
-	//Seteamos timestamp:
-	msg.timestamp	= {received : new Date().getTime()};
-	//Seteamos el estado:
-	msg.status		= 0;
+module.exports.send = function(msg,send) {
+  // Agregamos trace:
+  msg.trace     = config.app.defaults.trace;
+  //Seteamos timestamp:
+  msg.timestamp = {received : new Date().getTime()};
+  //Seteamos el estado:
+  msg.status    = 0;
 
-	//Finalmente enviamos el mensaje:
-	var sms = JSON.stringify(msg);
-	rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
-	rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
+  //Finalmente enviamos el mensaje:
+  var sms = JSON.stringify(msg);
+  if(send)
+  rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
+  rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
-	console.log('Sent[*]',msg);
+  console.log('Sent[*]', msg);
 }
 
 /*
- * Send a status update message to RabbitMQ server 
+ * Send a status update message to RabbitMQ server
  * @method send
  * @param {} state
  * @return
  */
 module.exports.update = function(state) {
-		rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
-		console.log('Sent[*]',state);
+    rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
+    console.log('Sent[*]',state);
 }

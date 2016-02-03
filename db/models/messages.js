@@ -29,3 +29,17 @@ module.exports.getByCompanyId = function(options, cb) {
       (items.length > 0) ? cb(items):cb(false);
     });
 }
+
+module.exports.getByPhone = function(companyId, options, cb) {
+  var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
+  var perPage = options.limit;
+  var collection = db.collection('messages');
+  console.log(companyId + " " + options.phone);
+  console.log(typeof options.phone);
+  collection.find({companyId: companyId, phone:options.phone}, {}, {limit: perPage})
+    .sort({ $natural: 1 })
+    .skip(pageNumber)
+    .toArray(function(err, items) {
+      (items.length > 0) ? cb(items):cb(false);
+    });
+}

@@ -2,13 +2,13 @@
   "amqp":
   {
     "addr": "mq-push-testing",
-    "user":"admin",
-    "pass":"admin1234",
-    "port":"",
+    "user": "admin",
+    "pass": "admin1234",
+    "port": "",
     "queues":
     {
-      "log":"log",
-      "msg":"messages"
+      "log": "log",
+      "msg": "messages"
     }
   },
   "app":
@@ -20,15 +20,15 @@
       "user": "tween",
       "from": "26100",
       "amqp": "mq-push-testing",
-      "trace":"API_MESSAGES",
-      "flags":"3",
+      "trace": "API_MESSAGES",
+      "flags": "3",
       "channel": "t"
     }
   },
   "db":
   {
-    "addr":"mongodb-testing",
-    "port":"27017"
+    "addr": "mongodb-testing",
+    "port": "27017"
   },
   "oauth2": "mongodb://mongodb-testing/oauth2"
 }

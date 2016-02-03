@@ -19,7 +19,7 @@
     {
       "user": "tween",
       "from": "26100",
-      "amqp": "mq-sms01",
+      "amqp": "localhost",
       "trace": "API_MESSAGES",
       "flags": "3",
       "channel": "t"
