@@ -2,13 +2,13 @@
   "amqp":
   {
     "addr": "localhost",
-    "user":"admin",
-    "pass":"2334E8Fx4g9p24g",
-    "port":"",
+    "user": "admin",
+    "pass": "admin1234",
+    "port": "",
     "queues":
     {
-      "log":"log",
-      "msg":"messages"
+      "log": "log",
+      "msg": "messages"
     }
   },
   "app":
@@ -19,16 +19,16 @@
     {
       "user": "tween",
       "from": "26100",
-      "amqp": "mq-sms01",
-      "trace":"API_MESSAGES",
-      "flags":"3",
+      "amqp": "localhost",
+      "trace": "API_MESSAGES",
+      "flags": "3",
       "channel": "t"
     }
   },
   "db":
   {
-    "addr":"localhost",
-    "port":"27017"
+    "addr": "localhost",
+    "port": "27017"
   },
   "oauth2": "mongodb://localhost/oauth2"
 }
