@@ -71,26 +71,33 @@ module.exports.update = function(req, res, next){
 }
 
 module.exports.delete = function(req, res, next){
-  // build the update object
-  var updateMsg = {'msgId':req.params.id, 'disabled': true, timestamp: {disabled: new Date().getTime()} };
-  // send the update object to rabbitmq
-  rabbit.update(updateMsg);
-  // finally send the http response
-  res.status(200).send({response: 'mensaje borrado', 'status': req.body.status, 'msgId': req.params.id});
+  messagesModel.getById(req.params.id, function(msg){
+    if(msg !== false)
+    {
+      // build the update object
+      var updateMsg = {'msgId':req.params.id, 'disabled': true, timestamp: {disabled: new Date().getTime()} };
+      // send the update object to rabbitmq
+      rabbit.update(updateMsg);
+      // finally send the http response
+      res.status(200).send({response: 'mensaje borrado', 'status': req.body.status, 'msgId': req.params.id});
+    }
+    else
+      res.status(204).send({status: 'ERROR', response: 'mensaje no encontrado'});
+  });
 }
 
 module.exports.get = function(req, res, next){
-  messagesModel.getById(req.params.id,function(msg){
+  messagesModel.getById(req.params.id, function(msg){
     if(msg !== false)
       res.status(200).send(msg);
     else
-      res.status(204).send({status: 'ERROR', response: 'message no encontrado'});
+      res.status(204).send({status: 'ERROR', response: 'mensaje no encontrado'});
   });
 }
 
 module.exports.getByCompanyId = function(req, res, next){
   console.log('routes messages');
-  messagesModel.getByCompanyId(req.query,function(msgs){
+  messagesModel.getByCompanyId(req.query, function(msgs){
     if(msgs !== false)
       res.status(200).send(msgs);
     else
@@ -99,7 +106,7 @@ module.exports.getByCompanyId = function(req, res, next){
 }
 
 module.exports.getByPhone = function(req, res, next){
-  messagesModel.getByPhone(req.params.companyId,req.query,function(msgs){
+  messagesModel.getByPhone(req.params.companyId, req.query, function(msgs){
     if(msgs !== false)
       res.status(200).send(msgs);
     else
