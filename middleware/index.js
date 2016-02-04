@@ -7,10 +7,19 @@ module.exports.message = function(req,res,next) {
   else if(message.msg == undefined || message.msg == '')
     res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Message'});
   else {
-      req.body.phone = req.body.phone.replace(/\D/g,'');
-      req.body.channel = req.body.channel.toLowerCase();
-      next();
+    req.body.phone = req.body.phone.replace(/\D/g,'');
+    req.body.channel = req.body.channel.toLowerCase();
+    next();
   }
+}
+
+
+module.exports.deleteMessage = function(req,res,next) {
+  var id = req.params.id;
+   if(isMessageIdInvalid(id))
+    res.status(422).send({ type: 'Unprocessable request', description: 'Missing/malformed msgId'});
+  else
+    next();
 }
 
 module.exports.updateCollection = function(req,res,next) {
@@ -22,7 +31,7 @@ module.exports.updateCollection = function(req,res,next) {
         msg = "";
     for(var i = 0; i < totalMessges; i++){
       msg = collection[i];
-      if(verifyMessageStatus(message.status)){
+      if(isMessageStatusInvalid(message.status)){
         errorExists = true;
         break;
       }
@@ -38,19 +47,24 @@ module.exports.updateCollection = function(req,res,next) {
 
 module.exports.update = function(req,res,next) {
   var message = req.body;
-  if(verifyMessageStatus(message.status))
+  if(isMessageStatusInvalid(message.status))
     res.status(422).send({ type: 'Unprocessable request', description: 'Missing/malformed status.'});
   else next();
 }
 
-function verifyMessageStatus(status)
+function isMessageStatusInvalid(status)
 {
-  return (status == undefined || Math.abs(status) > 5);
+  return (status === undefined || Math.abs(status) > 5);
+}
+
+function isMessageIdInvalid(id)
+{
+  return (!(id.length >= 32) || !validator.isAlphanumeric(id));
 }
 
 module.exports.get = function(req,res,next) {
   var id = req.params.id;
-  if(!(id.length >= 32) || !validator.isAlphanumeric(id))
+  if(isMessageIdInvalid(id))
     res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed msgId'});
   else next();
 }
