@@ -113,7 +113,7 @@ module.exports.getByPhone = function(req, res, next){
       res.status(204).send({status: 'ERROR', response: 'mensajes no encontrados para la compañía ' + req.query.companyId});
   });
 }
-
+//msg sender function
 function singleSender(req, msg_id){
   var msg       = req.body,
       company   = req.companyId,
