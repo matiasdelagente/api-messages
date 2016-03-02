@@ -8,7 +8,6 @@ module.exports.message = function(req,res,next) {
     res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Message'});
   else {
     req.body.phone = req.body.phone.replace(/\D/g,'');
-    req.body.channel = req.body.channel.toLowerCase();
     next();
   }
 }
