@@ -59,7 +59,7 @@ module.exports.checkMessage = function(sms){
  * @return Literal
  */
  module.exports.checkChannel = function(channel) {
-  return (channel !== undefined) ? channel : config.app.defaults.channel;
+  return (channel == undefined || channel == '') ? config.app.defaults.channel : channel.toLowerCase();
 }
 
 /**
