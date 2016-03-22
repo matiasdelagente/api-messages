@@ -1,6 +1,8 @@
 var amqp    = require('amqplib/callback_api'),
     helper  = require('../helpers'),
     consts  = require('../helpers/constants'),
+    Log             = require('log'),
+    log             = new Log(),
     config  = require('../config');
 
 /*
@@ -40,9 +42,10 @@ module.exports.send = function(msg, send) {
   var sms = JSON.stringify(msg);
   if(send)
     rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
+  // always log
   rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
 
-  console.log('Sent[*]', msg);
+  log.info('Sent save[*]', msg);
 }
 
 /*
@@ -52,6 +55,6 @@ module.exports.send = function(msg, send) {
  * @return
  */
 module.exports.update = function(state) {
-    rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
-    console.log('Sent[*]',state);
+  rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
+  log.info('Sent update[*]', state);
 }

@@ -23,7 +23,6 @@ module.exports.authorise = function(req, res, next) {
     req.bearerToken = headerToken;
 
   checkToken(req,res,function(){
-    console.log("checkToken passed");
     next();
   });
   }
