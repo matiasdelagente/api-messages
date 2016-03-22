@@ -7,8 +7,7 @@ var hat             = require('hat').rack(),
     helper          = require('../helpers'),
     config          = require('../config'),
     C               = require('../helpers/constants'),
-    messagesModel   = require('../db/models/messages'),
-    campaignsModel  = require('../db/models/campaigns');
+    messagesModel   = require('../db/models/messages');
 
 module.exports.send = function(req, res, next) {
   var msgId = hat(60,36);
