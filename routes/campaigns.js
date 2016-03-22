@@ -32,7 +32,8 @@ function campaignsSender(req, campaign) {
       campaignType    = typeof campaign.type === "undefined" ? username : campaign.type,
       campaignTTD     = (typeof campaign.ttd === "undefined" || isNaN(parseInt(campaign.ttd))) ? 0 : parseInt(campaign.ttd),
       campaignFlags   = typeof campaign.flags === "undefined" ? config.app.defaults.flags : campaign.flags,
-      campaignPayload = helper.checkMessage(campaign.description),
+      campaignCountry = typeof message.countryCode !== "undefined" ? helper.countryCode(message.countryCode) : "",
+      campaignCarrier = typeof message.op === "undefined" ? "g" : helper.checkOp(message),
       message         = {},
       user            = {},
       totalUsers      = campaign.users.length;
@@ -44,12 +45,14 @@ function campaignsSender(req, campaign) {
   message.listId    = campaign.listId;
   message.flags     = campaignFlags;
   message.companyId = companyId;
+  message.country   = campaignCountry;
+  message.op        = campaignCarrier;
 
   for(var i = 0; i < totalUsers; i++)
   {
     // send a message for every user in the list
     user                = campaign.users[i];
-    message.payload     = helper.replaceCampaignHeaders(campaignPayload, campaign.headers, user);
+    message.payload     = helper.checkMessage(helper.replaceCampaignHeaders(campaign.description, campaign.headers, user));
     message.channel     = helper.checkChannel(user.channel);
     message.phone       = user.phone;
     message.msgId       = campaign._id + '000' + i;
