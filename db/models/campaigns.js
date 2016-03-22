@@ -6,7 +6,7 @@ var ObjectId = require('mongodb').ObjectID;
 
 module.exports.getById = function(id, cb) {
   var collection = db.collection('campaigns');
-  collection.findOne({_id: id},{}, {limit:1}).toArray(function(err, items) {
-    (items.length > 0) ? cb(items[0]) : cb(false);
+  collection.findOne({_id: new ObjectId(id)}, {}, {limit:1}).toArray(function(err, campaign) {
+    (campaign) ? cb(campaign) : cb(false);
    });
 }
