@@ -12,6 +12,7 @@ var hat             = require('hat').rack(),
 
 module.exports.send = function(req, res, next) {
   var campaign = req.body;
+
   res.status(201).send({success: true, status: 'ok', response: 'campaigns.deliverySuccess'});
 
   campaignsSender(req, campaign);
@@ -27,16 +28,19 @@ module.exports.get = function(req, res, next) {
 }
 
 function campaignsSender(req, campaign) {
+
   var companyId       = req.companyId,
-      username        = req.username,
-      campaignType    = typeof campaign.type === "undefined" ? username : campaign.type,
-      campaignTTD     = (typeof campaign.ttd === "undefined" || isNaN(parseInt(campaign.ttd))) ? 0 : parseInt(campaign.ttd),
-      campaignFlags   = typeof campaign.flags === "undefined" ? config.app.defaults.flags : campaign.flags,
-      campaignCountry = typeof message.countryCode !== "undefined" ? helper.countryCode(message.countryCode) : "",
-      campaignCarrier = typeof message.op === "undefined" ? "g" : helper.checkOp(message),
+      username        = req.username;
       message         = {},
       user            = {},
+      campaignMsg     = "",
       totalUsers      = campaign.users.length;
+
+  var campaignType    = typeof campaign.type === "undefined" ? username : campaign.type;
+  var campaignTTD     = (typeof campaign.ttd === "undefined" || isNaN(parseInt(campaign.ttd))) ? 0 : parseInt(campaign.ttd);
+  var campaignFlags   = typeof campaign.flags === "undefined" ? config.app.defaults.flags : campaign.flags;
+  var campaignCountry = typeof message.countryCode !== "undefined" ? helper.countryCode(message.countryCode) : "";
+  var campaignCarrier = typeof message.op === "undefined" ? "g" : helper.checkOp(message);
 
   // we set the message fields
   message.user      = username;
@@ -52,12 +56,14 @@ function campaignsSender(req, campaign) {
   {
     // send a message for every user in the list
     user                = campaign.users[i];
-    message.payload     = helper.checkMessage(helper.replaceCampaignHeaders(campaign.description, campaign.headers, user));
+    campaignMsg         = helper.replaceCampaignHeaders(campaign.description, campaign.headers, user);
+    message.payload     = helper.checkMessage(campaignMsg);
     message.channel     = helper.checkChannel(user.channel);
     message.phone       = user.phone;
     message.msgId       = campaign._id + '000' + i;
     message.campaignId  = campaign._id;
 
+    log.info("Sent from Campaign [X]: " + JSON.stringify(message));
     // publish to the messages queue
     rabbit.send(message, true);
   }
