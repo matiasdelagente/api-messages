@@ -36,15 +36,10 @@ module.exports.checkMessage = function(msg){
 module.exports.replaceCampaignHeaders = function(message, headers, user) {
   var totalHeaders = headers.length;
 
-  console.log("header message: " + message);
-  console.log("user: " + JSON.stringify(user));
-
   for(var i = 0; i < totalHeaders; i++)
   {
     message = replaceAll(message, headers[i], user[i]);
   }
-
-  console.log("header message: " + message);
 
   return message;
 }

@@ -63,8 +63,8 @@ function campaignsSender(req, campaign) {
     message.msgId       = campaign._id + '000' + i;
     message.campaignId  = campaign._id;
 
-    console.log("Sent from Campaign [X]: " + JSON.stringify(message));
+    log.info("Sent from Campaign [X]: " + JSON.stringify(message));
     // publish to the messages queue
-    //rabbit.send(message, true);
+    rabbit.send(message, true);
   }
 }
