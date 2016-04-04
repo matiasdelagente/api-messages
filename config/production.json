@@ -19,18 +19,9 @@
     {
       "user": "tween",
       "from": "26100",
-      "amqp": "mq-sms01",
       "trace": "API_MESSAGES",
       "flags": "3",
       "channel": "t"
-    }
-  },
-  "api": {
-    "messages": {
-      "host": "api.viacelular.com",
-      "port": "80",
-      "version": "/v1",
-      "accessToken": "bdd91196f9540316308fc855af89b65f371c605d"
     }
   },
   "db":
