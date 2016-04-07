@@ -6,6 +6,7 @@ var messages    = require('./routes/messages'),
 
 //POST
 router.post('/messages/lists', oauth2.authorise, list.send);
+router.post('/messages/list', oauth2.authorise, list.send); //momentaneo hasta que todos usen la de arriba
 router.post('/messages/campaigns', oauth2.authorise, campaigns.send);
 router.post('/messages', oauth2.authorise, middleware.message, messages.send);
 
