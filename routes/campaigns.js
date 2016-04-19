@@ -1,5 +1,5 @@
 /**
- * rutas protegidas Send y Request de SMS de Campañas
+ * Rutas protegidas Send y Request de SMS de Campañas
  */
 
 var hat             = require('hat').rack(),
@@ -29,18 +29,18 @@ module.exports.get = function(req, res, next) {
 
 function campaignsSender(req, campaign) {
 
-  var companyId       = req.companyId,
-      username        = req.username;
+  var companyId       = campaign.companyId,
+      campaignTitle   = campaign.title,
+      username        = req.username,
       message         = {},
       user            = {},
       campaignMsg     = "",
       totalUsers      = campaign.users.length;
 
-  var campaignType    = typeof campaign.type === "undefined" ? username : campaign.type;
+  var campaignType    = typeof campaign.type === "undefined" ? campaignTitle : campaign.type;
   var campaignTTD     = (typeof campaign.ttd === "undefined" || isNaN(parseInt(campaign.ttd))) ? 0 : parseInt(campaign.ttd);
   var campaignFlags   = typeof campaign.flags === "undefined" ? config.app.defaults.flags : campaign.flags;
   var campaignCountry = typeof message.countryCode !== "undefined" ? helper.countryCode(message.countryCode) : "";
-  var campaignCarrier = typeof message.op === "undefined" ? "g" : helper.checkOp(message);
 
   // we set the message fields
   message.user      = username;
@@ -50,7 +50,6 @@ function campaignsSender(req, campaign) {
   message.flags     = campaignFlags;
   message.companyId = companyId;
   message.country   = campaignCountry;
-  message.op        = campaignCarrier;
 
   for(var i = 0; i < totalUsers; i++)
   {
