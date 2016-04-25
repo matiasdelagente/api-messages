@@ -5,13 +5,19 @@ function define(name, value) {
   });
 }
 
-define('MSG_RECIVED',       0);
-define('MSG_PROCESSING',    1);
-define('MSG_DELIVERED',     2);
-define('MSG_ACK', 		    3);
-define('MSG_READED',        4);
-define('MSG_SPAM',          1);
-define('MSG_REG_PRIORITY',	9);
+/* Campaign status */
+define('CAMPAIGN_RECEIVED',       0);
+define('CAMPAIGN_PROCESSING',     1);
+define('CAMPAIGN_DELIVERED',      2);
+define('CAMPAIGN_DELIVERY_ERROR', 3);
+/* Message status */
+define('MSG_RECIVED',             0);
+define('MSG_PROCESSING',          1);
+define('MSG_DELIVERED',           2);
+define('MSG_ACK',                 3);
+define('MSG_READED',              4);
+define('MSG_SPAM',                5);
+define('MSG_REG_PRIORITY',        9);
 /* Users status */
 define('USER_UNVERIFIED',   0);
 define('USER_ACTIVE',		1);

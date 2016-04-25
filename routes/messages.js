@@ -10,9 +10,9 @@ var rabbit        = require('../amqp'),
     messagesModel = require('../db/models/messages');
 
 function Send(req, res, next){
-  var msg_id = hat(60,36);
-  singleSender(req, msg_id, req.companyId);
-  res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msg_id});
+  var msgId = hat(60,36);
+  singleSender(req, msgId, req.companyId);
+  res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msgId});
 }
 
 function updateCollection(req, res, next){
@@ -38,9 +38,7 @@ function updateCollection(req, res, next){
       res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
     }
     else
-    {
-      res.status(204).send({status: 'ERROR', response: 'status inválido'});
-    }
+      errorResponse(res, 'status inválido');
   }
 }
 
@@ -56,16 +54,13 @@ function Update(req, res, next){
     // add the timestamp to the update object by state number
     updateMsg.timestamp[status] = new Date().getTime();
     // send the update object to rabbitmq
-    console.log("Updating message: " + JSON.stringify(updateMsg));
     rabbit.update(updateMsg);
     // finally send the http response
     res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
   }
-  else
-  {
-    res.status(204).send({status: 'ERROR', response: 'status inválido'});
+  else {
+    errorResponse(res, 'status inválido');
   }
-
 }
 
 function Delete(req, res, next){
@@ -79,30 +74,39 @@ function Delete(req, res, next){
       // finally send the http response
       res.status(200).send({response: 'mensaje borrado', 'status': req.body.status, 'msgId': req.params.id});
     }
-    else
-      res.status(204).send({status: 'ERROR', response: 'mensaje no encontrado'});
+    else {
+      errorResponse(res, 'mensaje no encontrado');
+    }
   });
 }
 
 function Get(req, res, next){
   messagesModel.getById(req.params.id, function(msg){
-    if(msg !== false)
+    if(msg !== false) {
       res.status(200).send(msg);
-    else
-      res.status(204).send({status: 'ERROR', response: 'mensaje no encontrado'});
+    }else {
+      errorResponse(res, 'mensaje no encontrado');
+    }
   });
 }
 
 function getByCompanyId(req, res, next){
-  console.log('routes messages');
   messagesModel.getByCompanyId(req.query, function(msgs){
-    if(msgs !== false)
+    if(msgs !== false) {
       res.status(200).send(msgs);
-    else
-      res.status(204).send({status: 'ERROR', response: 'mensajes no encontrados para la compañía ' + req.query.companyId});
+    }else {
+      errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+    }
   });
 }
 
+module.exports.getByPhone = function(req, res, next){
+  messagesModel.getByPhone(req.params.companyId, req.query, function(msgs){
+    if(msgs !== false)
+      res.status(200).send(msgs);
+    else
+      errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+  });
 function getByPhoneWOCaptured(req, res, next) {
   messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
     function (msgs) {
@@ -110,10 +114,7 @@ function getByPhoneWOCaptured(req, res, next) {
         res.status(200).send(msgs);
       }
       else {
-        res.status(204).send({
-          status   : "ERROR",
-          response : "mensajes no encontrados para la compañía " + req.query.companyId
-        });
+        errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
       }
     }
   );
@@ -126,15 +127,17 @@ function getByPhone(req, res, next) {
         res.status(200).send(msgs);
       }
       else {
-        res.status(204).send({
-          status   : "ERROR",
-          response : "mensajes no encontrados para la compañía " + req.query.companyId
-        });
+        errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
       }
     }
   );
 }
 
+function errorResponse(res, message){
+  res.status(204).send({status: 'ERROR', response: message});
+}
+
+//msg sender function
 function singleSender(req, msg_id){
   var msg       = req.body,
       company   = req.companyId,
