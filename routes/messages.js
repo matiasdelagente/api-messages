@@ -38,7 +38,9 @@ function updateCollection(req, res, next){
       res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
     }
     else
+    {
       errorResponse(res, 'status inválido');
+    }
   }
 }
 
@@ -100,33 +102,32 @@ function getByCompanyId(req, res, next){
   });
 }
 
-module.exports.getByPhone = function(req, res, next){
-  messagesModel.getByPhone(req.params.companyId, req.query, function(msgs){
-    if(msgs !== false)
-      res.status(200).send(msgs);
-    else
-      errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
-  });
-function getByPhoneWOCaptured(req, res, next) {
-  messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
-    function (msgs) {
-      if (msgs !== false) {
+function getByPhone(req, res, next) {
+  messagesModel.getByPhone(req.params.companyId, req.query,
+    function (msgs)
+    {
+      if (msgs !== false)
+      {
         res.status(200).send(msgs);
       }
-      else {
-        errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+      else
+      {
+        errorResponse(res, "mensajes no encontrados para la compañía " + req.query.companyId);
       }
     }
   );
 }
 
-function getByPhone(req, res, next) {
-  messagesModel.getByPhone(req.params.companyId, req.query,
-    function (msgs) {
+function getByPhoneWOCaptured(req, res, next)
+{
+  messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
+    function (msgs)
+    {
       if (msgs !== false) {
         res.status(200).send(msgs);
       }
-      else {
+      else
+      {
         errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
       }
     }

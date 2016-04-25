@@ -34,8 +34,7 @@ function getByCompanyId(options, cb) {
 function getByPhone(companyId, options, cb) {
   var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
   var perPage = options.limit;
-  var collection = db.collection('messages');
-
+  var collection = db.collection("messages");
   collection.find({companyId: companyId, phone:options.phone}, {}, {limit: perPage})
     .sort({$natural: 1})
     .skip(pageNumber)
