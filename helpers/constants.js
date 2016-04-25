@@ -1,8 +1,8 @@
 function define(name, value) {
-    Object.defineProperty(exports, name, {
-        value:      value,
-        enumerable: true
-    });
+  Object.defineProperty(exports, name, {
+    value      : value,
+    enumerable : true
+  });
 }
 
 define('MSG_RECIVED',       0);
@@ -29,3 +29,4 @@ define('PUSH_ONLY',        	1);
 define('SMS_ONLY',        	2);
 define('PUSH_AND_SMS',     	3);
 define('CAPTURED',	     	4);
+define("CAPTURED_PUSH",     5);

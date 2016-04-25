@@ -15,7 +15,8 @@ router.put('/messages', oauth2.authorise, middleware.updateCollection, messages.
 router.get('/messages/list/:id', oauth2.authorise, list.get);
 router.get('/messages/:id', oauth2.authorise, middleware.get, messages.get);
 router.get('/messages', oauth2.authorise, messages.getByCompanyId);
-router.get('/messages/companies/:companyId', oauth2.authorise, messages.getByPhone)
+router.get('/messages/companies/:companyId', oauth2.authorise, messages.getByPhone);
+router.get('/messages/companies/:companyId/notfull', oauth2.authorise, messages.getByPhoneWOCaptured);
 
 //DELETE
 router.delete('/messages/:id', oauth2.authorise, middleware.deleteMessage, messages.delete);

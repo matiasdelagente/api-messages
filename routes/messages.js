@@ -9,18 +9,16 @@ var rabbit        = require('../amqp'),
     C             = require('../helpers/constants'),
     messagesModel = require('../db/models/messages');
 
-
-
-module.exports.send = function(req, res, next){
+function Send(req, res, next){
   var msg_id = hat(60,36);
   singleSender(req, msg_id, req.companyId);
   res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msg_id});
 }
 
-module.exports.updateCollection = function(req, res, next){
+function updateCollection(req, res, next){
   var collection = req.body,
       totalMessages = collection.length,
-      msg = ''
+      msg = '',
       updateMsg = {},
       status = {};
 
@@ -43,10 +41,10 @@ module.exports.updateCollection = function(req, res, next){
     {
       res.status(204).send({status: 'ERROR', response: 'status inválido'});
     }
-  };
+  }
 }
 
-module.exports.update = function(req, res, next){
+function Update(req, res, next){
 
   //build the update object
   var updateMsg = {'msgId': req.params.id, 'status': req.body.status},
@@ -70,7 +68,7 @@ module.exports.update = function(req, res, next){
 
 }
 
-module.exports.delete = function(req, res, next){
+function Delete(req, res, next){
   messagesModel.getById(req.params.id, function(msg){
     if(msg !== false)
     {
@@ -86,7 +84,7 @@ module.exports.delete = function(req, res, next){
   });
 }
 
-module.exports.get = function(req, res, next){
+function Get(req, res, next){
   messagesModel.getById(req.params.id, function(msg){
     if(msg !== false)
       res.status(200).send(msg);
@@ -95,7 +93,7 @@ module.exports.get = function(req, res, next){
   });
 }
 
-module.exports.getByCompanyId = function(req, res, next){
+function getByCompanyId(req, res, next){
   console.log('routes messages');
   messagesModel.getByCompanyId(req.query, function(msgs){
     if(msgs !== false)
@@ -105,13 +103,36 @@ module.exports.getByCompanyId = function(req, res, next){
   });
 }
 
-module.exports.getByPhone = function(req, res, next){
-  messagesModel.getByPhone(req.params.companyId, req.query, function(msgs){
-    if(msgs !== false)
-      res.status(200).send(msgs);
-    else
-      res.status(204).send({status: 'ERROR', response: 'mensajes no encontrados para la compañía ' + req.query.companyId});
-  });
+function getByPhoneWOCaptured(req, res, next) {
+  messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
+    function (msgs) {
+      if (msgs !== false) {
+        res.status(200).send(msgs);
+      }
+      else {
+        res.status(204).send({
+          status   : "ERROR",
+          response : "mensajes no encontrados para la compañía " + req.query.companyId
+        });
+      }
+    }
+  );
+}
+
+function getByPhone(req, res, next) {
+  messagesModel.getByPhone(req.params.companyId, req.query,
+    function (msgs) {
+      if (msgs !== false) {
+        res.status(200).send(msgs);
+      }
+      else {
+        res.status(204).send({
+          status   : "ERROR",
+          response : "mensajes no encontrados para la compañía " + req.query.companyId
+        });
+      }
+    }
+  );
 }
 
 function singleSender(req, msg_id){
@@ -140,3 +161,12 @@ function singleSender(req, msg_id){
 
     rabbit.send(message, send);
 }
+
+module.exports.delete               = Delete;
+module.exports.get                  = Get;
+module.exports.getByCompanyId       = getByCompanyId;
+module.exports.getByPhone           = getByPhone;
+module.exports.getByPhoneWOCaptured = getByPhoneWOCaptured;
+module.exports.send                 = Send;
+module.exports.update               = Update;
+module.exports.updateCollection     = updateCollection;

@@ -1,23 +1,24 @@
 /*
 * pogui @ tween (6/2015)
-* User model funtions.
+* User model functions.
 */
+var C = require('../../helpers/constants');
 
-module.exports.getById = function(id, cb) {
+function getById(id, cb) {
   var collection = db.collection('messages');
   collection.find({msgId: id},{},{limit:1}).toArray(function(err, items) {
     (items.length > 0)?cb(items[0]):cb(false);
    });
 }
 
-module.exports.getListById = function(id, cb) {
+function getListById(id, cb) {
   var collection = db.collection('messages');
   collection.find({listId: id}).toArray(function(err, items) {
     (items.length > 0)?cb(items):cb(false);
    });
 }
 
-module.exports.getByCompanyId = function(options, cb) {
+function getByCompanyId(options, cb) {
   var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
   var perPage = options.limit;
   var collection = db.collection('messages');
@@ -30,12 +31,10 @@ module.exports.getByCompanyId = function(options, cb) {
     });
 }
 
-module.exports.getByPhone = function(companyId, options, cb) {
+function getByPhone(companyId, options, cb) {
   var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
   var perPage = options.limit;
-  var collection = db.collection('messages');
-  console.log(companyId + " " + options.phone);
-  console.log(typeof options.phone);
+  var collection = db.collection("messages");
   collection.find({companyId: companyId, phone:options.phone}, {}, {limit: perPage})
     .sort({ $natural: 1 })
     .skip(pageNumber)
@@ -43,3 +42,27 @@ module.exports.getByPhone = function(companyId, options, cb) {
       (items.length > 0) ? cb(items):cb(false);
     });
 }
+
+function getByPhoneWOCaptured(companyId, options, cb) {
+  var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
+  var perPage = options.limit;
+  var collection = db.collection("messages");
+  collection.find(
+    {companyId: companyId, phone:options.phone, flag : { $ne: [ C.CAPTURED, C.CAPTURED_PUSH ] } },
+    {}, {limit: perPage})
+    .sort({ $natural: 1 })
+    .skip(pageNumber)
+    .toArray(function(err, items) {
+      if(items && items.length > 0){
+        cb(items);
+      }else{
+        cb(false);
+      }
+    });
+}
+
+module.exports.getByCompanyId       = getByCompanyId;
+module.exports.getById              = getById;
+module.exports.getByPhone           = getByPhone;
+module.exports.getByPhoneWOCaptured = getByPhoneWOCaptured;
+module.exports.getListById          = getListById;
