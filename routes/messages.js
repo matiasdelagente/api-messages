@@ -9,7 +9,7 @@ var rabbit        = require('../amqp'),
     C             = require('../helpers/constants'),
     messagesModel = require('../db/models/messages');
 
-function Send(req, res, next){
+function send2Phone(req, res, next){
   var msgId = hat(60,36);
   singleSender(req, msgId, req.companyId);
   res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msgId});
@@ -44,7 +44,7 @@ function updateCollection(req, res, next){
   }
 }
 
-function Update(req, res, next){
+function updateByMsgIdAndStatus(req, res, next){
 
   //build the update object
   var updateMsg = {'msgId': req.params.id, 'status': req.body.status},
@@ -65,7 +65,7 @@ function Update(req, res, next){
   }
 }
 
-function Delete(req, res, next){
+function deleteById(req, res, next){
   messagesModel.getById(req.params.id, function(msg){
     if(msg !== false)
     {
@@ -82,7 +82,7 @@ function Delete(req, res, next){
   });
 }
 
-function Get(req, res, next){
+function getById(req, res, next){
   messagesModel.getById(req.params.id, function(msg){
     if(msg !== false) {
       res.status(200).send(msg);
@@ -166,11 +166,11 @@ function singleSender(req, msg_id){
     rabbit.send(message, send);
 }
 
-module.exports.delete               = Delete;
-module.exports.get                  = Get;
+module.exports.delete               = deleteById;
+module.exports.get                  = getById;
 module.exports.getByCompanyId       = getByCompanyId;
 module.exports.getByPhone           = getByPhone;
 module.exports.getByPhoneWOCaptured = getByPhoneWOCaptured;
-module.exports.send                 = Send;
-module.exports.update               = Update;
+module.exports.send                 = send2Phone;
+module.exports.update               = updateByMsgIdAndStatus;
 module.exports.updateCollection     = updateCollection;
