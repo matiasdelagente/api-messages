@@ -20,7 +20,7 @@ module.exports.get = function(req, res, next) {
     if(list !== false)
       res.status(200).send(list);
     else
-      res.status(204).send({status: 'ERROR', response: 'lista no encontrada'});
+      res.status(404).send({status: 'ERROR', response: 'lista no encontrada'});
   });
 }
 
