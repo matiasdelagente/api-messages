@@ -9,10 +9,10 @@ var rabbit        = require('../amqp'),
     C             = require('../helpers/constants'),
     messagesModel = require('../db/models/messages');
 
-function send2Phone(req, res, next){
-  var msgId = hat(60,36);
+function sendToPhone(req, res, next){
+  var msgId = hat(60, 36);
   singleSender(req, msgId, req.companyId);
-  res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msgId});
+  res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msgId, 'referenceId' : req.body.referenceId});
 }
 
 function updateCollection(req, res, next){
@@ -139,22 +139,23 @@ function errorResponse(res, message){
 }
 
 //msg sender function
-function singleSender(req, msg_id){
+function singleSender(req, msgId){
   var msg       = req.body,
       company   = req.companyId,
       username  = req.username,
       send      = true,
       code      = (msg.countryCode != undefined) ? helper.countryCode(msg.countryCode) : "",
       message   = {
-        payload   : helper.checkMessage(msg.msg),
-        channel   : helper.checkChannel(msg.channel),
-        country   : (msg.countryCode != undefined) ? msg.countryCode : "",
-        type      : (msg.type === undefined) ? username : msg.type,
-        ttd       : (msg.ttd === undefined || parseInt(msg.ttd) == NaN) ? 0 : parseInt(msg.ttd),
-        flags     : (msg.flags === undefined) ? config.app.defaults.flags : msg.flags,
-        phone     : code + msg.phone,
-        msgId     : msg_id,
-        companyId : company
+        payload     : helper.checkMessage(msg.msg),
+        channel     : helper.checkChannel(msg.channel),
+        referenceId : msg.referenceId != "" ? msg.referenceId : msgId,
+        country     : (msg.countryCode != undefined) ? msg.countryCode : "",
+        type        : (msg.type === undefined) ? username : msg.type,
+        ttd         : (msg.ttd === undefined || parseInt(msg.ttd) == NaN) ? 0 : parseInt(msg.ttd),
+        flags       : (msg.flags === undefined) ? config.app.defaults.flags : msg.flags,
+        phone       : code + msg.phone,
+        msgId       : msgId,
+        companyId   : company
       };
 
     // si son sms que la app esta enviando como sms choreados, guardamos extras
@@ -171,6 +172,6 @@ module.exports.get                  = getById;
 module.exports.getByCompanyId       = getByCompanyId;
 module.exports.getByPhone           = getByPhone;
 module.exports.getByPhoneWOCaptured = getByPhoneWOCaptured;
-module.exports.send                 = send2Phone;
+module.exports.send                 = sendToPhone;
 module.exports.update               = updateByMsgIdAndStatus;
 module.exports.updateCollection     = updateCollection;

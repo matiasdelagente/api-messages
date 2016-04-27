@@ -7,30 +7,13 @@
 var codes = require('./country.json'),
     conf  = require('../config');
 
-
-module.exports.checkOp = function(msg) {
-  return (conf.clients[msg.user].op_map && conf.clients[msg.user].op_map[msg.op])
-         ? conf.clients[msg.user].op_map[msg.op] : 'g';
-}
-
-/**
- * Description
- * @method userFrom
- * @param {} user
- * @return ConditionalExpression
- */
-module.exports.userFrom = function(user) {
-    return (conf.clients[user] && conf.clients[user].from)
-           ? conf.clients[user].from : '26100';
-}
-
 /**
  * @method checkSMS
  * @param string msg
  * @return ConditionalExpression
  */
 module.exports.checkMessage = function(msg){
-  return (!msg || msg == undefined) ? "" : msg.substring(0, 160);
+  return (!msg || typeog msg === "undefined") ? "" : msg.substring(0, 160);
 };
 
 module.exports.replaceCampaignHeaders = function(message, headers, user) {
@@ -69,14 +52,14 @@ function escapeRegExp(str) {
 }
 
 /**
- * Description
+ * Validate the channel
  * @method mapper
  * @param {} str
  * @param {} type
  * @return Literal
  */
  module.exports.checkChannel = function(channel) {
-  return (channel == undefined || channel == '') ? conf.app.defaults.channel : channel.toLowerCase();
+  return (typeof channel === "undefined" || channel === "") ? conf.app.defaults.channel : channel.toLowerCase();
 }
 
 /**
@@ -110,15 +93,15 @@ function escapeRegExp(str) {
  * @return json
  */
  module.exports.fillCapturedExtras = function(captured) {
-  // si son sms que la app esta enviando como sms choreados, guardamos extras
+  // si son sms que la app esta enviando como sms capturados, guardamos extras
   var extra = {};
 
-  if(captured.companyId !== undefined) extra.companyId = captured.companyId;
-  if(captured.from    !== undefined) extra.from = captured.from;
-  if(captured.type    !== undefined) extra.type = captured.type;
-  if(captured.created !== undefined) extra.created = captured.created;
-  if(captured.deleted !== undefined) extra.deleted = captured.deleted;
-  if(captured.status  !== undefined) extra.status = captured.status;
+  if(typeof captured.companyId !== "undefined") extra.companyId = captured.companyId;
+  if(typeof captured.from    !== "undefined") extra.from = captured.from;
+  if(typeof captured.type    !== "undefined") extra.type = captured.type;
+  if(typeof captured.created !== "undefined") extra.created = captured.created;
+  if(typeof captured.deleted !== "undefined") extra.deleted = captured.deleted;
+  if(typeof captured.status  !== "undefined") extra.status = captured.status;
 
   return extra;
 }
