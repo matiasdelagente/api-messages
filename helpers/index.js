@@ -13,7 +13,7 @@ var codes = require('./country.json'),
  * @return ConditionalExpression
  */
 module.exports.checkMessage = function(msg){
-  return (!msg || typeog msg === "undefined") ? "" : msg.substring(0, 160);
+  return (!msg || typeof msg === "undefined") ? "" : msg.substring(0, 160);
 };
 
 module.exports.replaceCampaignHeaders = function(message, headers, user) {
