@@ -32,15 +32,16 @@ function listSender(req, msgId) {
 
   for(element in list) {
      var message = {
-      user      : username,
-      payload   : helper.checkMessage(list[element].msg),
-      channel   : helper.checkChannel(list[element].channel),
-      country   : list[element].countryCode,
-      type      : (list[element].type === undefined) ? username : list[element].type,
-      ttd       : (list[element].ttd == undefined || isNaN(parseInt(list[element].ttd))) ? 0 : parseInt(list[element].ttd),
-      listId    : msgId,
-      flags     : (list[element].flags === undefined) ? config.app.defaults.flags : list[element].flags ,
-      companyId : company
+      user                : username,
+      payload             : helper.checkMessage(list[element].msg),
+      channel             : helper.checkChannel(list[element].channel),
+      referenceId         : list[element].referenceId != "" ? list[element].referenceId : msgId,
+      country             : list[element].countryCode,
+      type                : (list[element].type === undefined) ? username : list[element].type,
+      ttd                 : (list[element].ttd == undefined || isNaN(parseInt(list[element].ttd))) ? 0 : parseInt(list[element].ttd),
+      listId              : msgId,
+      flags               : (list[element].flags === undefined) ? config.app.defaults.flags : list[element].flags,
+      companyId           : company
     };
     // si son sms que la app esta enviando como sms choreados, guardamos extras
     var send=true;

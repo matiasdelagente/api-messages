@@ -2,11 +2,16 @@ var validator = require("validator");
 
 module.exports.message = function(req,res,next) {
   var message = req.body;
-  if(message.phone == undefined || message.phone == '' || !validator.isDecimal(message.phone) || message.phone.length >= 20)
-    res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Phone'});
-  else if(message.msg == undefined || message.msg == '')
-    res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed Message'});
-  else {
+  if(typeof message.phone === "undefined" || message.phone == '' || !validator.isDecimal(message.phone) || message.phone.length >= 20)
+    errorResponse(res, 'Missing/malformed Phone.');
+  else if(typeof message.msg === "undefined" || message.msg == '')
+    errorResponse(res, 'Missing/malformed Message.');
+  else if(typeof message.flags === "undefined" || message.flags == '' || !validator.isInt(message.flags) || message.flags > 5)
+    errorResponse(res, 'Missing/malformed flags.');
+  else if(typeof message.referenceId !== "undefined" && message.referenceId.length > 30)
+    errorResponse(res, 'Malformed referenceId.');
+  else
+  {
     req.body.phone = req.body.phone.replace(/\D/g,'');
     next();
   }
@@ -16,7 +21,7 @@ module.exports.message = function(req,res,next) {
 module.exports.deleteMessage = function(req,res,next) {
   var id = req.params.id;
    if(isMessageIdInvalid(id))
-    res.status(422).send({ type: 'Unprocessable request', description: 'Missing/malformed msgId'});
+    errorResponse(res, 'Missing/malformed msgId.');
   else
     next();
 }
@@ -36,19 +41,24 @@ module.exports.updateCollection = function(req,res,next) {
       }
     };
     if(errorExists)
-      res.status(422).send({type: 'Unprocessable request', description: 'Missing/malformed status.'});
+      errorResponse(res, 'Missing/malformed status.');
     else next();
   }
   else {
-    res.status(422).send({type: 'Unprocessable request', description: 'Body is not an Array.'});
+    errorResponse(res, 'Body is not an Array.');
   }
 }
 
 module.exports.update = function(req,res,next) {
   var message = req.body;
   if(isMessageStatusInvalid(message.status))
-    res.status(422).send({ type: 'Unprocessable request', description: 'Missing/malformed status.'});
+    errorResponse(res, 'Missing/malformed status.');
   else next();
+}
+
+function errorResponse(res, resDescription)
+{
+  res.status(422).send({ type: 'Unprocessable request', description: resDescription});
 }
 
 function isMessageStatusInvalid(status)
@@ -64,6 +74,6 @@ function isMessageIdInvalid(id)
 module.exports.get = function(req,res,next) {
   var id = req.params.id;
   if(isMessageIdInvalid(id))
-    res.status(422).send({ type: 'Unprocessable request',description: 'Missing/malformed msgId'});
+    errorResponse(res, 'Missing/malformed msgId.');
   else next();
 }
