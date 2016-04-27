@@ -39,7 +39,7 @@ function updateCollection(req, res, next){
     }
     else
     {
-      errorResponse(res, 'status inválido');
+      errorResponse(res, 422, 'status inválido');
     }
   }
 }
@@ -61,7 +61,7 @@ function updateByMsgIdAndStatus(req, res, next){
     res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
   }
   else {
-    errorResponse(res, 'status inválido');
+    errorResponse(res, 422, 'status inválido');
   }
 }
 
@@ -77,7 +77,7 @@ function deleteById(req, res, next){
       res.status(200).send({response: 'mensaje borrado', 'status': req.body.status, 'msgId': req.params.id});
     }
     else {
-      errorResponse(res, 'mensaje no encontrado');
+      errorResponse(res, 404, 'mensaje no encontrado');
     }
   });
 }
@@ -87,7 +87,7 @@ function getById(req, res, next){
     if(msg !== false) {
       res.status(200).send(msg);
     }else {
-      errorResponse(res, 'mensaje no encontrado');
+      errorResponse(res, 404, 'mensaje no encontrado');
     }
   });
 }
@@ -97,7 +97,7 @@ function getByCompanyId(req, res, next){
     if(msgs !== false) {
       res.status(200).send(msgs);
     }else {
-      errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+      errorResponse(res, 404, 'mensajes no encontrados para la compañía ' + req.query.companyId);
     }
   });
 }
@@ -112,7 +112,7 @@ function getByPhone(req, res, next) {
       }
       else
       {
-        errorResponse(res, "mensajes no encontrados para la compañía " + req.query.companyId);
+        errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.query.companyId);
       }
     }
   );
@@ -128,14 +128,14 @@ function getByPhoneWOCaptured(req, res, next)
       }
       else
       {
-        errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+        errorResponse(res, 404, 'mensajes no encontrados para la compañía ' + req.query.companyId);
       }
     }
   );
 }
 
-function errorResponse(res, message){
-  res.status(204).send({status: 'ERROR', response: message});
+function errorResponse(res, statusCode, message){
+  res.status(statusCode).send({status: 'ERROR', response: message});
 }
 
 //msg sender function
