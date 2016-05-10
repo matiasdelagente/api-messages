@@ -17,11 +17,13 @@ module.exports.checkMessage = function(msg){
 };
 
 module.exports.replaceCampaignHeaders = function(message, headers, user) {
-  var totalHeaders = headers.length;
+  var totalHeaders = headers.length,
+      replace       = "";
 
   for(var i = 0; i < totalHeaders; i++)
   {
-    message = replaceAll(message, headers[i], user[i]);
+    replace = (headers[i] !== "common.phone") ? user[i] : user.phone;
+    message = replaceAll(message, headers[i], replace);
   }
 
   return message;
