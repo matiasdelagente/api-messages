@@ -1,20 +1,44 @@
 /*
-* pogui @ tween (6/2015)
+* Pogui @ tween (6/2015)
+* Matias P. Sassi @ tween (6/2015)
 * Messages model funtions.
 */
-var C = require('../../helpers/constants');
+var C = require('../../helpers/constants'),
+    Log      = require('log'),
+    log      = new Log();
 
 function getById(id, cb) {
   var collection = db.collection('messages');
   collection.find({msgId: id}, {}, {limit:1}).toArray(function(err, items) {
-    (items.length > 0) ? cb(items[0]) : cb(false);
+    if(err)
+    {
+      log.error(err);
+      cb(false);
+    }
+    else if(items && items.length > 0)
+    {
+      var message = items[0];
+      message.id = message._id;
+      cb(message);
+    }
    });
 }
 
 function getListById(id, cb) {
   var collection = db.collection('messages');
   collection.find({listId: id}).toArray(function(err, items) {
-    (items.length > 0) ? cb(items) : cb(false);
+    if(err)
+    {
+      log.error(err);
+      cb(false);
+    }
+    else if(items && items.length > 0)
+    {
+      var list = items[0];
+      list.id = list._id;
+      cb(list);
+    }
+    else cb(false);
    });
 }
 
@@ -27,7 +51,13 @@ function getByCompanyId(options, cb) {
     .sort({ $natural: 1 })
     .skip(pageNumber)
     .toArray(function(err, items) {
-      (items.length > 0) ? cb(items) : cb(false);
+      if(err)
+      {
+        log.error(err);
+        cb(false);
+      }
+      else
+        returnArrayResponse(items, cb);
     });
 }
 
@@ -39,7 +69,13 @@ function getByPhone(companyId, options, cb) {
     .sort({$natural: 1})
     .skip(pageNumber)
     .toArray(function(err, items) {
-      (items.length > 0) ? cb(items) : cb(false);
+      if(err)
+      {
+        log.error(err);
+        cb(false);
+      }
+      else
+        returnArrayResponse(items, cb);
     });
 }
 
@@ -53,12 +89,30 @@ function getByPhoneWOCaptured(companyId, options, cb) {
     .sort({ $natural: 1 })
     .skip(pageNumber)
     .toArray(function(err, items) {
-      if(items && items.length > 0){
-        cb(items);
-      }else{
+      if(err)
+      {
+        log.error(err);
         cb(false);
       }
+      else
+        returnArrayResponse(items, cb);
     });
+}
+
+
+function returnArrayResponse(items, cb)
+{
+  if(items && items.length > 0)
+  {
+    var messageArr = [];
+    for(var message in items)
+    {
+      message.id = message._id;
+      messageArr.push(messageArr);
+    }
+    cb(messageArr);
+  }
+  else cb(false);
 }
 
 module.exports.getByCompanyId       = getByCompanyId;
