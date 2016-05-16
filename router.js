@@ -2,9 +2,11 @@ var messages    = require('./routes/messages'),
     list        = require('./routes/list'),
     campaigns   = require('./routes/campaigns'),
     middleware  = require('./middleware'),
+    callbacks   = require('./callbacks'),
     oauth2      = require('./oauth2');
 
 //POST
+router.post('/messages/callbacks/infobip', middleware.infobip, callbacks.infobip);
 router.post('/messages/lists', oauth2.authorise, list.send);
 router.post('/messages/list', oauth2.authorise, list.send); //momentaneo hasta que todos usen la de arriba
 router.post('/messages/campaigns', oauth2.authorise, campaigns.send);

@@ -77,3 +77,11 @@ module.exports.get = function(req,res,next) {
     errorResponse(res, 'Missing/malformed msgId.');
   else next();
 }
+
+
+
+module.exports.infobip = function(req, res, next)
+{
+  // TODO: implement validations for message fields
+  next();
+}
