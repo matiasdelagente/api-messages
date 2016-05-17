@@ -8,7 +8,8 @@
     "queues":
     {
       "log": "log",
-      "msg": "messages"
+      "msg": "messages",
+      "dlrInfobip": "infobip"
     }
   },
   "app":
