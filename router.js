@@ -2,7 +2,7 @@ var messages    = require('./routes/messages'),
     list        = require('./routes/list'),
     campaigns   = require('./routes/campaigns'),
     middleware  = require('./middleware'),
-    callbacks   = require('./callbacks'),
+    callbacks   = require('./routes/callbacks'),
     oauth2      = require('./oauth2');
 
 //POST
