@@ -20,6 +20,7 @@ module.exports.connect= function(server)
             if (err !== null) return log.error(err);
             rabbitChannel = ch;
             ch.assertQueue(server.queues.log,{ 'durable': true ,'maxPriority': 10},function(err,ok){console.log(ok)});
+            ch.assertQueue(server.queues.dlrInfobip,{ 'durable': true },function(err,ok){console.log(ok)});
             ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)});
         });
       });
