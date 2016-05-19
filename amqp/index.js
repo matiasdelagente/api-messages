@@ -44,7 +44,7 @@ module.exports.send = function(msg, send)
   // Finally, lets send the message:
   var sms = JSON.stringify(msg);
   if(send)
-    rabbitChannel.sendToQueue(config.amqp.queues.messages, new Buffer(sms), {expiration: (msg.ttd*1000)});
+    rabbitChannel.sendToQueue(config.amqp.queues.msg, new Buffer(sms), {expiration: (msg.ttd*1000)});
   // always log
   rabbitChannel.sendToQueue(config.amqp.queues.log, new Buffer(sms), {priority: 8});
 
