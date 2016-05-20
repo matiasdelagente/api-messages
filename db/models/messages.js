@@ -1,23 +1,48 @@
 /*
-* pogui @ tween (6/2015)
+* Pogui @ tween (6/2015)
+* Matias P. Sassi @ tween (6/2015)
 * Messages model funtions.
 */
+var C = require('../../helpers/constants'),
+    Log      = require('log'),
+    log      = new Log();
 
-module.exports.getById = function(id, cb) {
+function getById(id, cb) {
   var collection = db.collection('messages');
   collection.find({msgId: id}, {}, {limit:1}).toArray(function(err, items) {
-    (items.length > 0) ? cb(items[0]) : cb(false);
+    if(err)
+    {
+      log.error(err);
+      cb(false);
+    }
+    else if(items && items.length > 0)
+    {
+      var message = items[0];
+      message.id = message._id;
+      cb(message);
+    }
    });
 }
 
-module.exports.getListById = function(id, cb) {
+function getListById(id, cb) {
   var collection = db.collection('messages');
   collection.find({listId: id}).toArray(function(err, items) {
-    (items.length > 0) ? cb(items) : cb(false);
+    if(err)
+    {
+      log.error(err);
+      cb(false);
+    }
+    else if(items && items.length > 0)
+    {
+      var list = items[0];
+      list.id = list._id;
+      cb(list);
+    }
+    else cb(false);
    });
 }
 
-module.exports.getByCompanyId = function(options, cb) {
+function getByCompanyId(options, cb) {
   var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
   var perPage = options.limit;
   var collection = db.collection('messages');
@@ -26,19 +51,72 @@ module.exports.getByCompanyId = function(options, cb) {
     .sort({ $natural: 1 })
     .skip(pageNumber)
     .toArray(function(err, items) {
-      (items.length > 0) ? cb(items) : cb(false);
+      if(err)
+      {
+        log.error(err);
+        cb(false);
+      }
+      else
+        returnArrayResponse(items, cb);
     });
 }
 
-module.exports.getByPhone = function(companyId, options, cb) {
+function getByPhone(companyId, options, cb) {
   var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
   var perPage = options.limit;
-  var collection = db.collection('messages');
-
+  var collection = db.collection("messages");
   collection.find({companyId: companyId, phone:options.phone}, {}, {limit: perPage})
     .sort({$natural: 1})
     .skip(pageNumber)
     .toArray(function(err, items) {
-      (items.length > 0) ? cb(items) : cb(false);
+      if(err)
+      {
+        log.error(err);
+        cb(false);
+      }
+      else
+        returnArrayResponse(items, cb);
     });
 }
+
+function getByPhoneWOCaptured(companyId, options, cb) {
+  var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
+  var perPage = options.limit;
+  var collection = db.collection("messages");
+  collection.find(
+    {companyId: companyId, phone:options.phone, flag : { $ne: [ C.CAPTURED, C.CAPTURED_PUSH ] } },
+    {}, {limit: perPage})
+    .sort({ $natural: 1 })
+    .skip(pageNumber)
+    .toArray(function(err, items) {
+      if(err)
+      {
+        log.error(err);
+        cb(false);
+      }
+      else
+        returnArrayResponse(items, cb);
+    });
+}
+
+
+function returnArrayResponse(items, cb)
+{
+  if(items && items.length > 0)
+  {
+    var messageArr = [];
+    for(var message in items)
+    {
+      message.id = message._id;
+      messageArr.push(messageArr);
+    }
+    cb(messageArr);
+  }
+  else cb(false);
+}
+
+module.exports.getByCompanyId       = getByCompanyId;
+module.exports.getById              = getById;
+module.exports.getByPhone           = getByPhone;
+module.exports.getByPhoneWOCaptured = getByPhoneWOCaptured;
+module.exports.getListById          = getListById;

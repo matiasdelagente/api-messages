@@ -7,5 +7,5 @@ var url = 'mongodb://'+conf.db.addr+':'+conf.db.port+'/vcMessages';
 MongoClient.connect(url, function(err, database) {
   if(err) throw err;
   db = database;
-  log.info("Connected correctly to mongoDB".yellow);	
+  log.info("Connected correctly to mongoDB".yellow);
 });

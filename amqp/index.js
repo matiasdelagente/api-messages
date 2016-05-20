@@ -11,7 +11,8 @@ var amqp    = require('amqplib/callback_api'),
  * @param {} server (nameserv or ip)
  * @return
  */
-module.exports.connect= function(server) {
+module.exports.connect= function(server)
+{
     amqp.connect('amqp://'+server.user+':'+server.pass+'@'+server.addr,function(err,conn) {
         if (err !== null) return log.error(err);
 
@@ -19,10 +20,11 @@ module.exports.connect= function(server) {
             if (err !== null) return log.error(err);
             rabbitChannel = ch;
             ch.assertQueue(server.queues.log,{ 'durable': true ,'maxPriority': 10},function(err,ok){console.log(ok)});
+            ch.assertQueue(server.queues.dlrInfobip,{ 'durable': true },function(err,ok){console.log(ok)});
             ch.assertQueue(server.queues.msg,{ "durable": true, "deadLetterExchange": "dlx"},function(err,ok){console.log(ok)});
         });
       });
-}
+};
 
 /*
  * Send a message to RabbitMQ server - Makes the field name mapping
@@ -30,7 +32,8 @@ module.exports.connect= function(server) {
  * @param {} msg
  * @return
  */
-module.exports.send = function(msg, send) {
+module.exports.send = function(msg, send)
+{
   // add trace if not present
   msg.trace     = msg.trace ? msg.trace : config.app.defaults.trace;
   // Set timestamp:
@@ -41,12 +44,12 @@ module.exports.send = function(msg, send) {
   // Finally, lets send the message:
   var sms = JSON.stringify(msg);
   if(send)
-    rabbitChannel.sendToQueue('messages', new Buffer(sms), {expiration: (msg.ttd*1000)});
+    rabbitChannel.sendToQueue(config.amqp.queues.msg, new Buffer(sms), {expiration: (msg.ttd*1000)});
   // always log
-  rabbitChannel.sendToQueue('log', new Buffer(sms), {priority: 8});
+  rabbitChannel.sendToQueue(config.amqp.queues.log, new Buffer(sms), {priority: 8});
 
   log.info('Sent save[*]', msg);
-}
+};
 
 /*
  * Send a status update message to RabbitMQ server
@@ -54,7 +57,14 @@ module.exports.send = function(msg, send) {
  * @param {} state
  * @return
  */
-module.exports.update = function(state) {
-  rabbitChannel.sendToQueue('log', new Buffer(JSON.stringify(state)), {priority: 3});
+module.exports.update = function(state)
+{
+  rabbitChannel.sendToQueue(config.amqp.queues.log, new Buffer(JSON.stringify(state)), {priority: 3});
   log.info('Sent update[*]', state);
-}
+};
+
+
+module.exports.sendToInfobip = function(msg)
+{
+  rabbitChannel.sendToQueue(config.amqp.queues.dlrInfobip, new Buffer(JSON.stringify(msg)));
+};

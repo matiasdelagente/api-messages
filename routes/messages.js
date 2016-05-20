@@ -9,16 +9,16 @@ var rabbit        = require('../amqp'),
     C             = require('../helpers/constants'),
     messagesModel = require('../db/models/messages');
 
-module.exports.send = function(req, res, next){
-  var msgId = hat(60,36);
+function sendToPhone(req, res, next){
+  var msgId = hat(60, 36);
   singleSender(req, msgId, req.companyId);
-  res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msgId});
+  res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msgId, 'referenceId' : req.body.referenceId});
 }
 
-module.exports.updateCollection = function(req, res, next){
+function updateCollection(req, res, next){
   var collection = req.body,
       totalMessages = collection.length,
-      msg = ''
+      msg = '',
       updateMsg = {},
       status = {};
 
@@ -38,11 +38,13 @@ module.exports.updateCollection = function(req, res, next){
       res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
     }
     else
-      errorResponse(res, 'status inválido');
-  };
+    {
+      errorResponse(res, 422, 'status inválido');
+    }
+  }
 }
 
-module.exports.update = function(req, res, next){
+function updateByMsgIdAndStatus(req, res, next){
 
   //build the update object
   var updateMsg = {'msgId': req.params.id, 'status': req.body.status},
@@ -58,11 +60,12 @@ module.exports.update = function(req, res, next){
     // finally send the http response
     res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
   }
-  else
-    errorResponse(res, 'status inválido');
+  else {
+    errorResponse(res, 422, 'status inválido');
+  }
 }
 
-module.exports.delete = function(req, res, next){
+function deleteById(req, res, next){
   messagesModel.getById(req.params.id, function(msg){
     if(msg !== false)
     {
@@ -73,59 +76,86 @@ module.exports.delete = function(req, res, next){
       // finally send the http response
       res.status(200).send({response: 'mensaje borrado', 'status': req.body.status, 'msgId': req.params.id});
     }
-    else
-      errorResponse(res, 'mensaje no encontrado');
+    else {
+      errorResponse(res, 404, 'mensaje no encontrado');
+    }
   });
 }
 
-module.exports.get = function(req, res, next){
+function getById(req, res, next){
   messagesModel.getById(req.params.id, function(msg){
-    if(msg !== false)
+    if(msg !== false) {
       res.status(200).send(msg);
-    else
-      errorResponse(res, 'mensaje no encontrado');
+    }else {
+      errorResponse(res, 404, 'mensaje no encontrado');
+    }
   });
 }
 
-module.exports.getByCompanyId = function(req, res, next){
+function getByCompanyId(req, res, next){
   messagesModel.getByCompanyId(req.query, function(msgs){
-    if(msgs !== false)
+    if(msgs !== false) {
       res.status(200).send(msgs);
-    else
-      errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+    }else {
+      errorResponse(res, 404, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+    }
   });
 }
 
-module.exports.getByPhone = function(req, res, next){
-  messagesModel.getByPhone(req.params.companyId, req.query, function(msgs){
-    if(msgs !== false)
-      res.status(200).send(msgs);
-    else
-      errorResponse(res, 'mensajes no encontrados para la compañía ' + req.query.companyId);
-  });
+function getByPhone(req, res, next) {
+  messagesModel.getByPhone(req.params.companyId, req.query,
+    function (msgs)
+    {
+      if (msgs !== false)
+      {
+        res.status(200).send(msgs);
+      }
+      else
+      {
+        errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.query.companyId);
+      }
+    }
+  );
 }
 
-function errorResponse(res, message){
-  res.status(204).send({status: 'ERROR', response: message});
+function getByPhoneWOCaptured(req, res, next)
+{
+  messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
+    function (msgs)
+    {
+      if (msgs !== false) {
+        res.status(200).send(msgs);
+      }
+      else
+      {
+        errorResponse(res, 404, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+      }
+    }
+  );
+}
+
+function errorResponse(res, statusCode, message){
+  res.status(statusCode).send({status: 'ERROR', response: message});
 }
 
 //msg sender function
-function singleSender(req, msg_id){
+function singleSender(req, msgId){
   var msg       = req.body,
       company   = req.companyId,
       username  = req.username,
       send      = true,
       code      = (msg.countryCode != undefined) ? helper.countryCode(msg.countryCode) : "",
       message   = {
-        payload   : helper.checkMessage(msg.msg),
-        channel   : helper.checkChannel(msg.channel),
-        country   : (msg.countryCode != undefined) ? msg.countryCode : "",
-        type      : (msg.type === undefined) ? username : msg.type,
-        ttd       : (msg.ttd === undefined || parseInt(msg.ttd) == NaN) ? 0 : parseInt(msg.ttd),
-        flags     : (msg.flags === undefined) ? config.app.defaults.flags : msg.flags,
-        phone     : code + msg.phone,
-        msgId     : msg_id,
-        companyId : company
+        payload     : helper.checkMessage(msg.msg),
+        channel     : helper.checkChannel(msg.channel),
+        referenceId : msg.referenceId != "" ? msg.referenceId : msgId,
+        country     : (msg.countryCode != undefined) ? msg.countryCode : "",
+        type        : (msg.type === undefined) ? username : msg.type,
+        ttd         : (msg.ttd === undefined || parseInt(msg.ttd) == NaN) ? 0 : parseInt(msg.ttd),
+        flags       : (msg.flags === undefined) ? config.app.defaults.flags : msg.flags,
+        phone       : code + msg.phone,
+        msgId       : msgId,
+        companyId   : company
       };
 
     // si son sms que la app esta enviando como sms choreados, guardamos extras
@@ -136,3 +166,12 @@ function singleSender(req, msg_id){
 
     rabbit.send(message, send);
 }
+
+module.exports.delete               = deleteById;
+module.exports.get                  = getById;
+module.exports.getByCompanyId       = getByCompanyId;
+module.exports.getByPhone           = getByPhone;
+module.exports.getByPhoneWOCaptured = getByPhoneWOCaptured;
+module.exports.send                 = sendToPhone;
+module.exports.update               = updateByMsgIdAndStatus;
+module.exports.updateCollection     = updateCollection;

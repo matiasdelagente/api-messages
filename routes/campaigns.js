@@ -43,13 +43,13 @@ function campaignsSender(req, campaign) {
   var campaignCountry = typeof message.countryCode !== "undefined" ? helper.countryCode(message.countryCode) : "";
 
   // we set the message fields
-  message.user      = username;
-  message.type      = campaignType;
-  message.ttd       = campaignTTD;
-  message.listId    = campaign.listId;
-  message.flags     = campaignFlags;
-  message.companyId = companyId;
-  message.country   = campaignCountry;
+  message.user        = username;
+  message.type        = campaignType;
+  message.ttd         = campaignTTD;
+  message.listId      = campaign.listId;
+  message.flags       = campaignFlags;
+  message.companyId   = companyId;
+  message.country     = campaignCountry;
 
   for(var i = 0; i < totalUsers; i++)
   {
