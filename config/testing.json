@@ -26,6 +26,13 @@
       "channel": "t"
     }
   },
+  "backendBusiness" :
+  {
+    "host"        : "dev-companies.vloom.io",
+    "port"        : "80",
+    "version"     : "",
+    "accessToken" : ""
+  },
   "db":
   {
     "addr": "mongodb-testing",

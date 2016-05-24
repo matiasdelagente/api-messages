@@ -26,6 +26,13 @@
       "channel": "t"
     }
   },
+  "backendBusiness" :
+  {
+    "host"        : "local-business.vloom.io",
+    "port"        : "3000",
+    "version"     : "",
+    "accessToken" : ""
+  },
   "db":
   {
     "addr": "localhost",

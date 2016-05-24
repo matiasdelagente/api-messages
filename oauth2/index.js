@@ -2,6 +2,10 @@ var config        = require('../config'),
     MongoClient   = require('mongodb').MongoClient,
     accessTokens  = {};
 
+// Loging setup:
+var Log    = require('log'),
+    log    = new Log();
+    colors = require('colors');
 
 module.exports.initialize = function() {
   MongoClient.connect(config.oauth2, function(err, database) {
