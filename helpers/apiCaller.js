@@ -8,7 +8,7 @@ var querystring = require('querystring'),
     colors      = require('colors');
 
 module.exports.performRequest = function (host, port, version, endpoint, method, token, data, success, secure) {
-  secure = secure || false;
+  var secureCall = secure || false;
 
   var headers = {};
   if(token && token.length !== 0)
@@ -27,7 +27,7 @@ module.exports.performRequest = function (host, port, version, endpoint, method,
     headers["Content-Length"] = Buffer.byteLength(dataString);
   }
 
-  log.info((secure ? "Secure API call" : "Insecure API call") + " to: ["
+  log.info((secureCall ? "Secure API call" : "Insecure API call") + " to: ["
             + method.toUpperCase() + "] " + host + ":" + port + version + endpoint);
 
   var options = {
@@ -39,17 +39,17 @@ module.exports.performRequest = function (host, port, version, endpoint, method,
   };
 
   try {
-    makeRequest(options, dataString, success, secure);
+    makeRequest(options, dataString, success, secureCall);
   } catch (e) {
     log.error(e);
   }
 };
 
 function makeRequest(options, dataString, success, secure){
-  secure = secure || false;
+  var secureCall = secure || false;
   var req;
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-  if(secure)
+  if(secureCall)
   {
     options.strictSSL = true;
     options.protocol = "https:";
