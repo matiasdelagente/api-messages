@@ -2,17 +2,22 @@
  * rutas protegidas Send y Request de SMS
  */
 
-var rabbit        = require('../amqp'),
-    helper        = require('../helpers'),
-    hat           = require('hat').rack(),
-    config        = require('../config'),
-    C             = require('../helpers/constants'),
-    messagesModel = require('../db/models/messages');
+var rabbit        = require("../amqp"),
+    helper        = require("../helpers"),
+    api           = require("../helpers/apiCaller"),
+    hat           = require("hat").rack(),
+    config        = require("../config"),
+    C             = require("../helpers/constants"),
+    messagesModel = require("../db/models/messages"),
+    host          = config.backendBusiness.host,
+    port          = config.backendBusiness.port,
+    version       = config.backendBusiness.version,
+    token         = config.backendBusiness.accessToken;
 
 function sendToPhone(req, res, next){
   var msgId = hat(60, 36);
   singleSender(req, msgId, req.companyId);
-  res.status(201).send({response: 'mensaje enviado corectamente', 'msgId': msgId, 'referenceId' : req.body.referenceId});
+  res.status(201).send({response: "mensaje enviado corectamente", 'msgId': msgId, 'referenceId' : req.body.referenceId});
 }
 
 function updateCollection(req, res, next){
@@ -25,7 +30,7 @@ function updateCollection(req, res, next){
   for (var i = 0; i < totalMessages; i++) {
     msg = collection[i];
     //build the update object
-    updateMsg = {'msgId': msg.id, 'status': msg.status},
+    updateMsg = {'msgId': msg.id, 'status': msg.status};
     status = helper.timestampByState(msg.status);
     if(status !== "error")
     {
@@ -35,11 +40,11 @@ function updateCollection(req, res, next){
       // send the update object to rabbitmq
       rabbit.update(updateMsg);
       // finally send the http response
-      res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
+      res.status(201).send({response: "nuevo estado guardado",'status': req.body.status, 'msgId': req.params.id});
     }
     else
     {
-      errorResponse(res, 422, 'status inválido');
+      errorResponse(res, 422, "status inválido");
     }
   }
 }
@@ -58,10 +63,10 @@ function updateByMsgIdAndStatus(req, res, next){
     // send the update object to rabbitmq
     rabbit.update(updateMsg);
     // finally send the http response
-    res.status(201).send({response: 'nuevo estado guardado','status': req.body.status, 'msgId': req.params.id});
+    res.status(201).send({response: "nuevo estado guardado",'status': req.body.status, 'msgId': req.params.id});
   }
   else {
-    errorResponse(res, 422, 'status inválido');
+    errorResponse(res, 422, "status inválido");
   }
 }
 
@@ -74,10 +79,10 @@ function deleteById(req, res, next){
       // send the update object to rabbitmq
       rabbit.update(updateMsg);
       // finally send the http response
-      res.status(200).send({response: 'mensaje borrado', 'status': req.body.status, 'msgId': req.params.id});
+      res.status(200).send({response: "mensaje borrado", 'status': req.body.status, 'msgId': req.params.id});
     }
     else {
-      errorResponse(res, 404, 'mensaje no encontrado');
+      errorResponse(res, 404, "mensaje no encontrado");
     }
   });
 }
@@ -87,7 +92,7 @@ function getById(req, res, next){
     if(msg !== false) {
       res.status(200).send(msg);
     }else {
-      errorResponse(res, 404, 'mensaje no encontrado');
+      errorResponse(res, 404, "mensaje no encontrado");
     }
   });
 }
@@ -97,7 +102,7 @@ function getByCompanyId(req, res, next){
     if(msgs !== false) {
       res.status(200).send(msgs);
     }else {
-      errorResponse(res, 404, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+      errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.query.companyId);
     }
   });
 }
@@ -112,7 +117,7 @@ function getByPhone(req, res, next) {
       }
       else
       {
-        errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.query.companyId);
+        errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.params.companyId);
       }
     }
   );
@@ -120,18 +125,60 @@ function getByPhone(req, res, next) {
 
 function getByPhoneWOCaptured(req, res, next)
 {
-  messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
-    function (msgs)
+  var callbackVersion = req.query.callbackVersion || false;
+  if(callbackVersion)
+  {
+    res.status(200).send({"response":"processing"});
+    var companyId = req.params.companyId;
+    messagesModel.getByPhoneWOCaptured(companyId, req.query, callbackPhones);
+    function callbackPhones(msgs)
     {
-      if (msgs !== false) {
-        res.status(200).send(msgs);
+      var response     = {};
+      response.apiCall = C.API_CALL.toString();
+      if (msgs !== false)
+      {
+        response.success = true;
+        response.data    = JSON.stringify(msgs);
       }
       else
       {
-        errorResponse(res, 404, 'mensajes no encontrados para la compañía ' + req.query.companyId);
+        response.success = false;
+        response.message = "messages.notFound";
+        response.data    = JSON.stringify([]);
       }
+      var endpoint = callbackVersion.toString().replace(":companyId", companyId.toString());
+      var environment = process.env.NODE_ENV || false, secure = false;
+      if(environment === "development")
+      {
+        secure = true;
+      }
+      api.performRequest(host, port, version, endpoint, "GET", token, response,
+        function(response)
+        {
+          if(response)
+          {
+            log.info("successfullyCallToBackendBusiness");
+          }
+        }, secure
+      )
     }
-  );
+  }
+  else
+  {
+    messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
+      function (msgs)
+      {
+        if (msgs !== false)
+        {
+          res.status(200).send(msgs);
+        }
+        else
+        {
+          errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.params.companyId);
+        }
+      }
+    );
+  }
 }
 
 function errorResponse(res, statusCode, message){

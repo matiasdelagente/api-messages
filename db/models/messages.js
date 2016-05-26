@@ -80,11 +80,11 @@ function getByPhone(companyId, options, cb) {
 }
 
 function getByPhoneWOCaptured(companyId, options, cb) {
-  var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
-  var perPage = options.limit;
+  var pageNumber = options.offset > 0 ? ((options.offset - 1) * options.limit) : 0;
+  var perPage    = options.limit;
   var collection = db.collection("messages");
   collection.find(
-    {companyId: companyId, phone:options.phone, flag : { $ne: [ C.CAPTURED, C.CAPTURED_PUSH ] } },
+    { "companyId": companyId, "phone": options.phone, "flags" : { $ne: [ C.CAPTURED, C.CAPTURED_PUSH ] } },
     {}, {limit: perPage})
     .sort({ $natural: 1 })
     .skip(pageNumber)
