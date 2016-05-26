@@ -28,7 +28,7 @@
   },
   "backendBusiness" :
   {
-    "host"        : "dev-companies.vloom.io",
+    "host"        : "dev-business.vloom.io",
     "port"        : "80",
     "version"     : "",
     "accessToken" : ""
