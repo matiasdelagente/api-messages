@@ -21,7 +21,7 @@ require('./amqp').connect((config.amqp));
 require('./oauth2').initialize();
 
 // Loging setup:
-var Log   = require('log')
+var Log   = require('log'),
     log   = new Log();
     colors  = require('colors');
 
@@ -30,8 +30,8 @@ var express     = require('express');
 var bodyParser  = require('body-parser');
 var morgan      = require('morgan');
 
-var app     = express();
-  router    = express.Router();
+var app    = express(),
+    router = express.Router();
 
 //Custom morgan request logger format:
 app.use(morgan(':remote-addr [:date[clf]] ":method :url HTTP/:http-version" :status :response-time ms'));
@@ -41,7 +41,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 //Application router:
-require('./router');
+require('./router')(router);
 app.use('/v'+config.app.ver + '/',router);
 
 app.use(function(err, req, res, next) {

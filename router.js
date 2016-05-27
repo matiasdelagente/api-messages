@@ -1,3 +1,5 @@
+module.exports = function (router)
+{
 var messages    = require('./routes/messages'),
     list        = require('./routes/list'),
     campaigns   = require('./routes/campaigns'),
@@ -25,3 +27,5 @@ router.get('/messages/companies/:companyId/notfull', oauth2.authorise, messages.
 
 //DELETE
 router.delete('/messages/:id', oauth2.authorise, middleware.deleteMessage, messages.delete);
+
+};
