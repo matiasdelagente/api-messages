@@ -11,9 +11,9 @@ var amqp    = require('amqplib/callback_api'),
  * @param {} server (nameserv or ip)
  * @return
  */
-module.exports.connect= function(server)
+module.exports.connect= function(amqpConfig)
 {
-  amqp.connect('amqp://'+server.user+':'+server.pass+'@'+server.addr,function(err,conn)
+  amqp.connect('amqp://'+amqpConfig.user+':'+amqpConfig.pass+'@'+amqpConfig.addr,function(err,conn)
   {
     if (err !== null) return log.error(err);
 
@@ -21,16 +21,16 @@ module.exports.connect= function(server)
     {
       if (err !== null) return log.error(err);
       rabbitChannel = ch;
-      ch.assertQueue(server.queues.log,{"durable": true ,"maxPriority": 10}, assertCallback);
-      ch.assertQueue(server.queues.dlrInfobip,{ "durable": true }, assertCallback);
-      ch.assertQueue(server.queues.msg, {"durable": true}, assertCallback)
+      ch.assertQueue(amqpConfig.queues.log,{"durable": true ,"maxPriority": 10}, assertCallback);
+      ch.assertQueue(amqpConfig.queues.dlrInfobip,{ "durable": true }, assertCallback);
+      ch.assertQueue(amqpConfig.queues.msg, {"durable": true}, assertCallback)
       //assert the exchange: 'delayedMessages' to be a x-delayed-message,
-      ch.assertExchange(server.exchanges.delayedMessages.name, "x-delayed-message",
-                       {"alternateExchange": server.exchanges.delayedMessages.alternateExchange,
+      ch.assertExchange(amqpConfig.exchanges.delayedMessages.name, "x-delayed-message",
+                       {"alternateExchange": amqpConfig.exchanges.delayedMessages.alternateExchange,
                         "autoDelete": false, "durable": true, "passive": true,
-                        "arguments": {'x-delayed-type': server.exchanges.delayedMessages.type}}, assertCallback)
+                        "arguments": {'x-delayed-type': amqpConfig.exchanges.delayedMessages.type}}, assertCallback)
       //Bind the queue: "messages" to the exchnage: "delayedMessages" with no binding key
-      ch.bindQueue(server.queues.msg, server.exchanges.delayedMessages.name, "");
+      ch.bindQueue(amqpConfig.queues.msg, amqpConfig.exchanges.delayedMessages.name, "");
     });
   });
 };
@@ -59,7 +59,7 @@ module.exports.send = function(msg, send)
   // Finally, lets send the message:
   var sms = JSON.stringify(msg);
   if(send)
-    rabbitChannel.publish(config.exchanges.delayedMessages.name, '', new Buffer(sms), {headers: {"x-delay": msg.ttd*1000}});
+    rabbitChannel.publish(config.amqp.exchanges.delayedMessages.name, '', new Buffer(sms), {headers: {"x-delay": msg.ttd*1000}});
 
   // always log
   rabbitChannel.sendToQueue(config.amqp.queues.log, new Buffer(sms), {priority: 8});
