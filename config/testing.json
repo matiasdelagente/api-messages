@@ -4,12 +4,20 @@
     "addr": "mq-push-testing",
     "user": "admin",
     "pass": "admin1234",
-    "port": "",
     "queues":
     {
       "log": "log",
       "msg": "messages",
       "dlrInfobip": "infobip"
+    },
+    "exchanges":
+    {
+      "delayedMessages":
+      {
+        "name": "delayedMessages",
+        "type": "fanout",
+        "alternateExchange" : "dlx"
+      }
     }
   },
   "app":
