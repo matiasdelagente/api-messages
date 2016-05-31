@@ -2,19 +2,19 @@
  * rutas protegidas Send y Request de SMS
  */
 
-var rabbit        = require("../amqp");
-var helper        = require("../helpers");
-var api           = require("../helpers/apiCaller");
-var hat           = require("hat").rack();
-var config        = require("../config");
-var C             = require("../helpers/constants");
-var messagesModel = require("../db/models/messages");
-var host          = config.backendBusiness.host;
-var port          = config.backendBusiness.port;
-var version       = config.backendBusiness.version;
-var token         = config.backendBusiness.accessToken;
-var Log           = require('log');
-var log           = new Log();
+var rabbit        = require("../amqp"),
+    helper        = require("../helpers"),
+    api           = require("../helpers/apiCaller"),
+    hat           = require("hat").rack(),
+    config        = require("../config"),
+    C             = require("../helpers/constants"),
+    messagesModel = require("../db/models/messages"),
+    host          = config.backendBusiness.host,
+    port          = config.backendBusiness.port,
+    version       = config.backendBusiness.version,
+    token         = config.backendBusiness.accessToken,
+    Log           = require('log'),
+    log           = new Log();
 
 function sendToPhone(req, res, next){
   var msgId = hat(60, 36);
@@ -24,12 +24,12 @@ function sendToPhone(req, res, next){
 
 function updateCollection(req, res)
 {
-  var collection    = req.body;
-  var totalMessages = collection.length;
-  var msg           = "";
-  var updateMsg     = {};
-  var status        = {};
-  var ok            = true;
+  var collection    = req.body,
+      totalMessages = collection.length,
+      msg           = "",
+      updateMsg     = {},
+      status        = {},
+      ok            = true;
 
   for(var i = 0; i < totalMessages; i++)
   {

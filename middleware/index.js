@@ -1,5 +1,5 @@
-var validator = require("validator");
-var _     		= require("lodash");
+var validator = require("validator"),
+    _     		= require("lodash");
 
 module.exports.message = function(req,res,next) {
   var message = req.body;
@@ -29,8 +29,8 @@ module.exports.deleteMessage = function(req,res,next) {
 
 function updateCollection(req, res, next)
 {
-  var collection  = req.body;
-  var errorExists = false;
+  var collection  = req.body,
+      errorExists = false;
 
   if(_.isArray(collection))
   {
