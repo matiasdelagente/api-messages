@@ -12,7 +12,9 @@ var rabbit        = require("../amqp"),
     host          = config.backendBusiness.host,
     port          = config.backendBusiness.port,
     version       = config.backendBusiness.version,
-    token         = config.backendBusiness.accessToken;
+    token         = config.backendBusiness.accessToken,
+    Log           = require('log'),
+    log           = new Log();
 
 function sendToPhone(req, res, next){
   var msgId = hat(60, 36);
@@ -20,32 +22,57 @@ function sendToPhone(req, res, next){
   res.status(201).send({response: "mensaje enviado corectamente", 'msgId': msgId, 'referenceId' : req.body.referenceId});
 }
 
-function updateCollection(req, res, next){
-  var collection = req.body,
+function updateCollection(req, res)
+{
+  var collection    = req.body,
       totalMessages = collection.length,
-      msg = '',
-      updateMsg = {},
-      status = {};
+      msg           = "",
+      updateMsg     = {},
+      status        = {},
+      ok            = true;
 
-  for (var i = 0; i < totalMessages; i++) {
-    msg = collection[i];
+  for(var i = 0; i < totalMessages; i++)
+  {
+    msg       = collection[i];
     //build the update object
-    updateMsg = {'msgId': msg.id, 'status': msg.status};
-    status = helper.timestampByState(msg.status);
+    updateMsg = {"msgId": msg.id, "status": msg.status};
+    status    = helper.timestampByState(msg.status);
+
     if(status !== "error")
     {
-      if(!updateMsg.hasOwnProperty("timestamp")) updateMsg.timestamp = {};
+      if(!updateMsg.hasOwnProperty("timestamp"))
+      {
+        updateMsg.timestamp = {};
+      }
+
       // add the timestamp to the update object by state number
       updateMsg.timestamp[status] = new Date().getTime();
+
       // send the update object to rabbitmq
-      rabbit.update(updateMsg);
-      // finally send the http response
-      res.status(201).send({response: "nuevo estado guardado",'status': req.body.status, 'msgId': req.params.id});
+      try
+      {
+        rabbit.update(updateMsg);
+      }
+      catch(e)
+      {
+        ok = false;
+        log.error(e);
+      }
     }
     else
     {
-      errorResponse(res, 422, "status inválido");
+      ok = false;
+      break;
     }
+  }
+
+  if(ok)
+  {
+    res.status(201).send({status: "OK", response: "new saved state"});
+  }
+  else
+  {
+    errorResponse(res, 422, "Status invalid");
   }
 }
 
@@ -181,8 +208,9 @@ function getByPhoneWOCaptured(req, res, next)
   }
 }
 
-function errorResponse(res, statusCode, message){
-  res.status(statusCode).send({status: 'ERROR', response: message});
+function errorResponse(res, statusCode, message)
+{
+  res.status(statusCode).send({status: "ERROR", response: message});
 }
 
 //msg sender function
