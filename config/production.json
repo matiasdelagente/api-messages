@@ -8,7 +8,7 @@
     "queues":
     {
       "log": "log",
-      "msg": "messages",
+      "msg": "buffer",
       "dlrInfobip": "infobip"
     },
     "exchanges":
