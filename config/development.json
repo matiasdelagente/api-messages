@@ -10,6 +10,15 @@
       "log": "log",
       "msg": "messages",
       "dlrInfobip": "infobip"
+    },
+    "exchanges":
+    {
+      "delayedMessages":
+      {
+        "name": "delayedMessages",
+        "type": "fanout",
+        "alternateExchange" : "dlx"
+      }
     }
   },
   "app":
