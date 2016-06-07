@@ -5,7 +5,11 @@
  */
 
 //newRelic plugin:
-//require('newrelic');
+var nodeEnv = process.env.NODE_ENV || 'development';
+if(nodeEnv === "production")
+{
+  require('newrelic');
+}
 
 //mongoDB:
 require('./db');
