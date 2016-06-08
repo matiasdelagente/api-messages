@@ -11,7 +11,7 @@ var hat             = require('hat').rack(),
 
 module.exports.send = function(req, res, next) {
   var msgId = hat(60,36);
-  res.status(201).send({status: 'ok', response: 'procesamiento en curso', 'msgListID': msgId});
+  res.status(201).send({status: 'ok', response: 'List being processed', 'msgListID': msgId});
   listSender(req, msgId);
 }
 
@@ -20,7 +20,7 @@ module.exports.get = function(req, res, next) {
     if(list !== false)
       res.status(200).send(list);
     else
-      res.status(404).send({status: 'ERROR', response: 'lista no encontrada'});
+      res.status(404).send({status: 'ERROR', response: 'List not found'});
   });
 }
 

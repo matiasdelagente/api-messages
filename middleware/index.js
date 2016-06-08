@@ -1,19 +1,78 @@
 var validator = require("validator"),
-    _     		= require("lodash");
+    _         = require("lodash"),
+    helpers   = require("../helpers"),
+    Log       = require('log'),
+    log       = new Log();
 
 module.exports.message = function(req,res,next) {
   var message = req.body;
-  if(typeof message.phone === "undefined" || message.phone == '' || !validator.isDecimal(message.phone) || message.phone.length >= 20)
-    errorResponse(res, 'Missing/malformed Phone.');
-  else if(typeof message.msg === "undefined" || message.msg == '')
-    errorResponse(res, 'Missing/malformed Message.');
-  else if(typeof message.flags === "undefined" || message.flags == '' || !validator.isInt(message.flags) || message.flags > 5)
-    errorResponse(res, 'Missing/malformed flags.');
+
+  // it there is no phone or empty phone or just the + sign we fail
+  if(typeof message.phone === "undefined" || message.phone === "" || message.phone === "+")
+  {
+    return errorResponse(res, "Missing/malformed phone.");
+  }
+  // if the phone comes with the + at the beginning we remove it
+  else if(message.phone.startsWith("+"))
+  {
+    message.phone = message.phone.substring(1);
+  }
+
+  // if the phone is not an integer we fail
+  if(!validator.isInt(message.phone))
+  {
+    log.info("not int");
+    return errorResponse(res, "Missing/malformed phone.");
+  }
+  // if we have a countryCode (ISO)
+  if(typeof message.countryCode !== "undefined" && message.countryCode !== "")
+  {
+    // we validate the countryCode
+    // according to https://en.wikipedia.org/wiki/E.164
+    var countryCode = message.countryCode + "";
+    if(countryCode.length > 3)
+    {
+      log.info("invalid countryCode");
+      return errorResponse(res, "Missing/malformed countryCode.");
+    }
+    else
+    {
+      // if we have both countryCode and phone we validate both of them
+      var countryCodePrefix  = helpers.countryCode(countryCode),
+          internationalPhone = (countryCodePrefix + "") + (message.phone + "");
+      if(internationalPhone.length > 15)
+      {
+        return errorResponse(res, "Malformed phone and countryCode combination.");
+      }
+    }
+  }
+  // if we don't have a countryCode we validate the phone length
+  // according to https://en.wikipedia.org/wiki/E.164
+  else if(message.phone.length > 15)
+  {
+    return errorResponse(res, "Missing/malformed phone.");
+  }
+
+  // the phone and countryCode (if present) are correct
+  if(typeof message.msg === "undefined" || message.msg == "")
+  {
+    return errorResponse(res, "Missing/malformed message.");
+  }
+  else if(typeof message.flags === "undefined" || message.flags == "" || !validator.isInt(message.flags) || message.flags > 5)
+  {
+    return errorResponse(res, "Missing/malformed flags.");
+  }
   else if(typeof message.referenceId !== "undefined" && message.referenceId.length > 30)
-    errorResponse(res, 'Malformed referenceId.');
+  {
+    return errorResponse(res, "Malformed referenceId.");
+  }
+  else if(typeof message.ttd !== "undefined" && !validator.isInt(message.ttd))
+  {
+    return errorResponse(res, "Malformed ttd.");
+  }
   else
   {
-    req.body.phone = req.body.phone.replace(/\D/g,'');
+    req.body.phone = message.phone.replace(/\D/g,"");
     next();
   }
 };
@@ -22,7 +81,7 @@ module.exports.message = function(req,res,next) {
 module.exports.deleteMessage = function(req,res,next) {
   var id = req.params.id;
    if(isMessageIdInvalid(id))
-    errorResponse(res, 'Missing/malformed msgId.');
+    errorResponse(res, "Missing/malformed msgId.");
   else
     next();
 };
@@ -104,15 +163,18 @@ function updateCollection(req, res, next)
 }
 
 module.exports.update = function(req,res,next) {
-  var message = req.body;
-  if(isMessageStatusInvalid(message.status))
-    errorResponse(res, 'Missing/malformed status.');
+  var message = req.body,
+      id      = req.params.id;
+   if(isMessageIdInvalid(id))
+    errorResponse(res, "Missing/malformed msgId.");
+  else if(isMessageStatusInvalid(message.status))
+    errorResponse(res, "Missing/malformed status.");
   else next();
 };
 
 function errorResponse(res, resDescription)
 {
-  res.status(422).send({ type: 'Unprocessable request', description: resDescription});
+  res.status(422).send({ type: "Unprocessable request", description: resDescription});
 }
 
 function isMessageStatusInvalid(status)
@@ -128,7 +190,7 @@ function isMessageIdInvalid(id)
 module.exports.get = function(req,res,next) {
   var id = req.params.id;
   if(isMessageIdInvalid(id))
-    errorResponse(res, 'Missing/malformed msgId.');
+    errorResponse(res, "Missing/malformed msgId.");
   else next();
 };
 

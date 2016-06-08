@@ -54,5 +54,5 @@ app.use(function(err, req, res, next) {
 });
 
 http.createServer(app).listen(config.app.port, function(){
-  log.info('apiMessages  puerto:', config.app.port);
+  log.info("Started apiMessages in " +  nodeEnv + " environment at port:", config.app.port);
 });

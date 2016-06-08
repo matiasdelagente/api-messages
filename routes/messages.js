@@ -90,10 +90,10 @@ function updateByMsgIdAndStatus(req, res, next){
     // send the update object to rabbitmq
     rabbit.update(updateMsg);
     // finally send the http response
-    res.status(201).send({response: "nuevo estado guardado",'status': req.body.status, 'msgId': req.params.id});
+    res.status(201).send({response: "Message updated", 'status': req.body.status, 'msgId': req.params.id});
   }
   else {
-    errorResponse(res, 422, "status inválido");
+    errorResponse(res, 422, "Invalid status");
   }
 }
 
@@ -106,10 +106,10 @@ function deleteById(req, res, next){
       // send the update object to rabbitmq
       rabbit.update(updateMsg);
       // finally send the http response
-      res.status(200).send({response: "mensaje borrado", 'status': req.body.status, 'msgId': req.params.id});
+      res.status(200).send({response: "Message deleted", 'status': req.body.status, 'msgId': req.params.id});
     }
     else {
-      errorResponse(res, 404, "mensaje no encontrado");
+      errorResponse(res, 404, "Message not found");
     }
   });
 }
@@ -119,7 +119,7 @@ function getById(req, res, next){
     if(msg !== false) {
       res.status(200).send(msg);
     }else {
-      errorResponse(res, 404, "mensaje no encontrado");
+      errorResponse(res, 404, "Message not found");
     }
   });
 }
@@ -129,7 +129,7 @@ function getByCompanyId(req, res, next){
     if(msgs !== false) {
       res.status(200).send(msgs);
     }else {
-      errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.query.companyId);
+      errorResponse(res, 404, "Messages not found for company " + req.query.companyId);
     }
   });
 }
@@ -144,7 +144,7 @@ function getByPhone(req, res, next) {
       }
       else
       {
-        errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.params.companyId);
+        errorResponse(res, 404, "Messages not found for company " + req.params.companyId);
       }
     }
   );
@@ -155,7 +155,7 @@ function getByPhoneWOCaptured(req, res, next)
   var callbackVersion = req.query.callbackVersion || false;
   if(callbackVersion)
   {
-    res.status(200).send({"response":"processing"});
+    res.status(200).send({"response": "processing"});
     var companyId = req.params.companyId;
     messagesModel.getByPhoneWOCaptured(companyId, req.query, callbackPhones);
     function callbackPhones(msgs)
@@ -201,7 +201,7 @@ function getByPhoneWOCaptured(req, res, next)
         }
         else
         {
-          errorResponse(res, 404, "mensajes no encontrados para la compañía " + req.params.companyId);
+          errorResponse(res, 404, "Messages not found for company " + req.params.companyId);
         }
       }
     );
@@ -215,20 +215,21 @@ function errorResponse(res, statusCode, message)
 
 //msg sender function
 function singleSender(req, msgId){
+  log.info("singleSender");
   var msg       = req.body,
       company   = req.companyId,
       username  = req.username,
       send      = true,
-      code      = (msg.countryCode != undefined) ? helper.countryCode(msg.countryCode) : "",
+      code      = (typeof msg.countryCode !== "undefined" && msg.countryCode !== "") ? helper.countryCode(msg.countryCode) : false,
       message   = {
         payload     : helper.checkMessage(msg.msg),
         channel     : helper.checkChannel(msg.channel),
-        referenceId : msg.referenceId != "" ? msg.referenceId : msgId,
-        country     : (msg.countryCode != undefined) ? msg.countryCode : "",
-        type        : (msg.type === undefined) ? username : msg.type,
-        ttd         : (msg.ttd === undefined || parseInt(msg.ttd) == NaN) ? 0 : parseInt(msg.ttd),
-        flags       : (msg.flags === undefined) ? config.app.defaults.flags : msg.flags,
-        phone       : code + msg.phone,
+        referenceId : (typeof msg.referenceId !== "undefined" && msg.referenceId !== "") ? msg.referenceId : msgId,
+        country     : (typeof msg.countryCode !== "undefined") ? msg.countryCode : "",
+        type        : (typeof msg.type === "undefined") ? username : msg.type,
+        ttd         : (typeof msg.ttd === "undefined" || parseInt(msg.ttd) == NaN) ? 0 : parseInt(msg.ttd),
+        flags       : (typeof msg.flags === "undefined") ? config.app.defaults.flags : msg.flags,
+        phone       : (code !== false) ? code + msg.phone : msg.phone,
         msgId       : msgId,
         companyId   : company
       };
