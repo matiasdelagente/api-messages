@@ -1,6 +1,7 @@
 var validator = require("validator"),
     _         = require("lodash"),
     helpers   = require("../helpers"),
+    constants = require("../helpers/constants"),
     Log       = require('log'),
     log       = new Log();
 
@@ -13,9 +14,12 @@ module.exports.message = function(req,res,next) {
     return errorResponse(res, "Missing/malformed phone.");
   }
   // if the phone comes with the + at the beginning we remove it
-  else if(message.phone.startsWith("+"))
+  else
   {
-    message.phone = message.phone.substring(1);
+    if(message.phone.startsWith("+"))
+    {
+      message.phone = message.phone.substring(1);
+    }
   }
 
   // if the phone is not an integer we fail
@@ -40,7 +44,7 @@ module.exports.message = function(req,res,next) {
       // if we have both countryCode and phone we validate both of them
       var countryCodePrefix  = helpers.countryCode(countryCode),
           internationalPhone = (countryCodePrefix + "") + (message.phone + "");
-      if(internationalPhone.length > 15)
+      if(internationalPhone.length > constants.PHONE_LENGTH)
       {
         return errorResponse(res, "Malformed phone and countryCode combination.");
       }
@@ -48,7 +52,7 @@ module.exports.message = function(req,res,next) {
   }
   // if we don't have a countryCode we validate the phone length
   // according to https://en.wikipedia.org/wiki/E.164
-  else if(message.phone.length > 15)
+  else if(message.phone.length > constants.PHONE_LENGTH)
   {
     return errorResponse(res, "Missing/malformed phone.");
   }
@@ -62,7 +66,7 @@ module.exports.message = function(req,res,next) {
   {
     return errorResponse(res, "Missing/malformed flags.");
   }
-  else if(typeof message.referenceId !== "undefined" && message.referenceId.length > 30)
+  else if(typeof message.referenceId !== "undefined" && message.referenceId.length > constants.REFERENCEID_LENGTH)
   {
     return errorResponse(res, "Malformed referenceId.");
   }
@@ -78,12 +82,17 @@ module.exports.message = function(req,res,next) {
 };
 
 
-module.exports.deleteMessage = function(req,res,next) {
+module.exports.deleteMessage = function(req,res,next)
+{
   var id = req.params.id;
-   if(isMessageIdInvalid(id))
+  if(isMessageIdInvalid(id))
+  {
     errorResponse(res, "Missing/malformed msgId.");
+  }
   else
+  {
     next();
+  }
 };
 
 function updateCollection(req, res, next)
@@ -162,14 +171,25 @@ function updateCollection(req, res, next)
   }
 }
 
-module.exports.update = function(req,res,next) {
+module.exports.update = function(req,res,next)
+{
   var message = req.body,
       id      = req.params.id;
-   if(isMessageIdInvalid(id))
+  if(isMessageIdInvalid(id))
+  {
     errorResponse(res, "Missing/malformed msgId.");
-  else if(isMessageStatusInvalid(message.status))
-    errorResponse(res, "Missing/malformed status.");
-  else next();
+  }
+  else
+  {
+    if(isMessageStatusInvalid(message.status))
+    {
+      errorResponse(res, "Missing/malformed status.");
+    }
+    else
+    {
+      next();
+    }
+  }
 };
 
 function errorResponse(res, resDescription)
@@ -179,7 +199,8 @@ function errorResponse(res, resDescription)
 
 function isMessageStatusInvalid(status)
 {
-  return (status === undefined || Math.abs(status) > 5);
+  //Se incorpora el status 6 para diferenciar mensajes personales
+  return (_.isUndefined(status) || !validator.isInt(status) || Math.abs(status) > constants.MSG_PERSONAL);
 }
 
 function isMessageIdInvalid(id)
@@ -187,11 +208,17 @@ function isMessageIdInvalid(id)
   return (!(id.length >= 32) || !validator.isAlphanumeric(id));
 }
 
-module.exports.get = function(req,res,next) {
+module.exports.get = function(req,res,next)
+{
   var id = req.params.id;
   if(isMessageIdInvalid(id))
+  {
     errorResponse(res, "Missing/malformed msgId.");
-  else next();
+  }
+  else
+  {
+    next();
+  }
 };
 
 module.exports.infobip = function(req, res, next)
@@ -200,4 +227,96 @@ module.exports.infobip = function(req, res, next)
   next();
 };
 
+//Agregado para validar campos recibidos en la api-storage
+function storage(req, res, next)
+{
+  if(_.isArray(req.body))
+  {
+    if(req.body.length > 0)
+    {
+      var isOk = true;
+
+      for(var i=0; i < req.body.length; i++)
+      {
+        if( !req.body[0].hasOwnProperty("type") || !req.body[0].hasOwnProperty("msg") || !req.body[0].hasOwnProperty("status") || !req.body[0].hasOwnProperty("companyId")
+            ||!req.body[0].hasOwnProperty("countryCode") || !req.body[0].hasOwnProperty("from") || !req.body[0].hasOwnProperty("flags") || !req.body[0].hasOwnProperty("phones"))
+        {
+          isOk = false;
+          break;
+        }
+        else
+        {
+          if(_.isUndefined(req.body[0].msg) || !_.isString(req.body[0].msg))
+          {
+            isOk = false;
+            break;
+          }
+
+          if(_.isUndefined(req.body[0].type) || !_.isString(req.body[0].type))
+          {
+            isOk = false;
+            break;
+          }
+
+          if(_.isUndefined(req.body[0].flags) || !validator.isInt(req.body[0].flags) || req.body[0].flags > constants.CAPTURED_PUSH)
+          {
+            isOk = false;
+            break;
+          }
+
+          if(isMessageStatusInvalid(req.body[0].status))
+          {
+            isOk = false;
+            break;
+          }
+
+          if(_.isUndefined(req.body[0].countryCode) || !_.isString(req.body[0].countryCode))
+          {
+            isOk = false;
+            break;
+          }
+
+          if(_.isUndefined(req.body[0].from) || !_.isString(req.body[0].from))
+          {
+            isOk = false;
+            break;
+          }
+
+          if(!_.isArray(req.body[0].phones))
+          {
+            isOk = false;
+            break;
+          }
+          else
+          {
+            if(req.body[0].phones.length == 0)
+            {
+              isOk = false;
+              break;
+            }
+          }
+        }
+      }
+
+      if(isOk)
+      {
+        next();
+      }
+      else
+      {
+        res.status(422).send({status: "ERROR", response: "Messages malformed"});
+      }
+    }
+    else
+    {
+      res.status(422).send({status: "ERROR", response: "Messages malformed"});
+    }
+  }
+  else
+  {
+    res.status(422).send({status: "ERROR", response: "Messages malformed"});
+  }
+}
+
 module.exports.updateCollection = updateCollection;
+module.exports.storage          = storage;
