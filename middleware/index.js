@@ -2,85 +2,209 @@ var validator = require("validator"),
     _         = require("lodash"),
     helpers   = require("../helpers"),
     constants = require("../helpers/constants"),
-    Log       = require('log'),
+    Log       = require("log"),
     log       = new Log();
 
-module.exports.message = function(req,res,next) {
+function message(req, res, next)
+{
   var message = req.body;
 
-  // it there is no phone or empty phone or just the + sign we fail
-  if(typeof message.phone === "undefined" || message.phone === "" || message.phone === "+")
+  //Modificación para reutilizar validación para las listas
+  if(!message.phone)
   {
-    return errorResponse(res, "Missing/malformed phone.");
+    errorResponse(res, "Missing/malformed phone.");
   }
-  // if the phone comes with the + at the beginning we remove it
   else
   {
-    if(message.phone.startsWith("+"))
+    var phone = validatePhone(message.phone, res);
+    if(phone)
     {
-      message.phone = message.phone.substring(1);
+      message.phone = phone;
+      if(validateMessage(message, res))
+      {
+        next();
+      }
+    }
+  }
+}
+
+function validatePhone(phone, res)
+{
+  if(typeof phone === "undefined" || phone === "")
+  {
+    errorResponse(res, "Missing/malformed phone.");
+  }
+  else
+  {
+    // if the phone comes with the + at the beginning we remove it
+    phone = phone.replace("+", "");
+
+    // if the phone is not an integer we fail
+    if(!validator.isInt(phone))
+    {
+      log.info("not int");
+      errorResponse(res, "Missing/malformed phone.");
+    }
+    else
+    {
+      return phone.replace(/\D/g,"");
     }
   }
 
-  // if the phone is not an integer we fail
-  if(!validator.isInt(message.phone))
+  return false;
+}
+
+function validatePhones(phones, res)
+{
+  var isOk = true;
+
+  if(_.isArray(phones) && phones.length)
   {
-    log.info("not int");
-    return errorResponse(res, "Missing/malformed phone.");
+    for(var i=0; i < phones.length; i++)
+    {
+      var phone = validatePhone(phones[i], res);
+      if(phone)
+      {
+        phones[i] = phone;
+      }
+      else
+      {
+        isOk = false;
+        break;
+      }
+    }
   }
-  // if we have a countryCode (ISO)
-  if(typeof message.countryCode !== "undefined" && message.countryCode !== "")
+
+  if(isOk)
   {
-    // we validate the countryCode
-    // according to https://en.wikipedia.org/wiki/E.164
-    var countryCode = message.countryCode + "";
+    return phones;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+function validateCountry(countryCode, phone, res)
+{
+  // if we have a countryCode (ISO)
+  if(typeof countryCode !== "undefined" && countryCode !== "")
+  {
+    // we validate the countryCode according to https://en.wikipedia.org/wiki/E.164
+    countryCode = countryCode + "";
     if(countryCode.length > 3)
     {
       log.info("invalid countryCode");
-      return errorResponse(res, "Missing/malformed countryCode.");
+      errorResponse(res, "Missing/malformed countryCode.");
+      return false;
     }
     else
     {
       // if we have both countryCode and phone we validate both of them
       var countryCodePrefix  = helpers.countryCode(countryCode),
-          internationalPhone = (countryCodePrefix + "") + (message.phone + "");
+          internationalPhone = (countryCodePrefix + "") + (phone + "");
       if(internationalPhone.length > constants.PHONE_LENGTH)
       {
-        return errorResponse(res, "Malformed phone and countryCode combination.");
+        errorResponse(res, "Malformed phone and countryCode combination.");
+        return false;
       }
     }
   }
-  // if we don't have a countryCode we validate the phone length
-  // according to https://en.wikipedia.org/wiki/E.164
-  else if(message.phone.length > constants.PHONE_LENGTH)
+  else
   {
-    return errorResponse(res, "Missing/malformed phone.");
+    // if we don't have a countryCode we validate the phone length according to https://en.wikipedia.org/wiki/E.164
+    if(phone.length > constants.PHONE_LENGTH)
+    {
+      errorResponse(res, "Missing/malformed phone.");
+      return false;
+    }
   }
+
+  return true;
+}
+
+function validateMessage(message, res)
+{
+  var countryOk = true;
+
+  if(message.phone)
+  {
+    if(!validateCountry(message.countryCode, message.phone, res))
+    {
+      return false;
+    }
+  }
+  else
+  {
+    for(var i=0; i < message.phones.length; i++)
+    {
+      if(!validateCountry(message.countryCode, message.phones[i], res))
+      {
+        return false;
+      }
+    }
+  }
+
+  console.log("valido phone y country ok");
+  return true;
 
   // the phone and countryCode (if present) are correct
   if(typeof message.msg === "undefined" || message.msg == "")
   {
-    return errorResponse(res, "Missing/malformed message.");
-  }
-  else if(typeof message.flags === "undefined" || message.flags == "" || !validator.isInt(message.flags) || message.flags > 5)
-  {
-    return errorResponse(res, "Missing/malformed flags.");
-  }
-  else if(typeof message.referenceId !== "undefined" && message.referenceId.length > constants.REFERENCEID_LENGTH)
-  {
-    return errorResponse(res, "Malformed referenceId.");
-  }
-  else if(typeof message.ttd !== "undefined" && !validator.isInt(message.ttd))
-  {
-    return errorResponse(res, "Malformed ttd.");
+    errorResponse(res, "Missing/malformed message.");
+    return false;
   }
   else
   {
-    req.body.phone = message.phone.replace(/\D/g,"");
-    next();
-  }
-};
+    if(typeof message.flags === "undefined" || message.flags == "" || !validator.isInt(message.flags) || message.flags > constants.CAPTURED_PUSH)
+    {
+      errorResponse(res, "Missing/malformed flags.");
+      return false;
+    }
+    else
+    {
+      if(typeof message.referenceId !== "undefined" && message.referenceId.length > constants.REFERENCEID_LENGTH)
+      {
+        errorResponse(res, "Malformed referenceId.");
+        return false;
+      }
+      else
+      {
+        if(typeof message.ttd !== "undefined" && !validator.isInt(message.ttd))
+        {
+          errorResponse(res, "Malformed ttd.");
+          return false;
+        }
+        else
+        {
+          if(typeof message.type !== "undefined" && message.type == "")
+          {
+            errorResponse(res, "Malformed type.");
+            return false;
+          }
 
+          //Si el flag es constants.CAPTURED se valida status y from
+          if(message.flags == constants.CAPTURED)
+          {
+            if(isMessageStatusInvalid(message.status))
+            {
+              errorResponse(res, "Malformed status.");
+              return false;
+            }
+
+            if(typeof message.from !== "undefined" && message.from == "")
+            {
+              errorResponse(res, "Malformed from.");
+              return false;
+            }
+          }
+
+          return true;
+        }
+      }
+    }
+  }
+}
 
 module.exports.deleteMessage = function(req,res,next)
 {
@@ -230,82 +354,41 @@ module.exports.infobip = function(req, res, next)
 //Agregado para validar campos recibidos en la api-storage
 function storage(req, res, next)
 {
-  if(_.isArray(req.body))
+  if(_.isArray(req.body) && req.body.length)
   {
-    if(req.body.length > 0)
-    {
-      var isOk = true;
+    var isOk = true;
 
-      for(var i=0; i < req.body.length; i++)
+    for(var i=0; i < req.body.length; i++)
+    {
+      if(!req.body[i].msg || !req.body[i].flags || !req.body[i].phones)
       {
-        if( !req.body[0].hasOwnProperty("type") || !req.body[0].hasOwnProperty("msg") || !req.body[0].hasOwnProperty("status") || !req.body[0].hasOwnProperty("companyId")
-            ||!req.body[0].hasOwnProperty("countryCode") || !req.body[0].hasOwnProperty("from") || !req.body[0].hasOwnProperty("flags") || !req.body[0].hasOwnProperty("phones"))
+        isOk = false;
+        break;
+      }
+      else
+      {
+        var phones = validatePhones(req.body[i].phones, res);
+
+        if(phones)
+        {
+          req.body[i].phones = phones;
+          if(!validateMessage(req.body[i], res))
+          {
+            isOk = false;
+            break;
+          }
+        }
+        else
         {
           isOk = false;
           break;
         }
-        else
-        {
-          if(_.isUndefined(req.body[0].msg) || !_.isString(req.body[0].msg))
-          {
-            isOk = false;
-            break;
-          }
-
-          if(_.isUndefined(req.body[0].type) || !_.isString(req.body[0].type))
-          {
-            isOk = false;
-            break;
-          }
-
-          if(_.isUndefined(req.body[0].flags) || !validator.isInt(req.body[0].flags) || req.body[0].flags > constants.CAPTURED_PUSH)
-          {
-            isOk = false;
-            break;
-          }
-
-          if(isMessageStatusInvalid(req.body[0].status))
-          {
-            isOk = false;
-            break;
-          }
-
-          if(_.isUndefined(req.body[0].countryCode) || !_.isString(req.body[0].countryCode))
-          {
-            isOk = false;
-            break;
-          }
-
-          if(_.isUndefined(req.body[0].from) || !_.isString(req.body[0].from))
-          {
-            isOk = false;
-            break;
-          }
-
-          if(!_.isArray(req.body[0].phones))
-          {
-            isOk = false;
-            break;
-          }
-          else
-          {
-            if(req.body[0].phones.length == 0)
-            {
-              isOk = false;
-              break;
-            }
-          }
-        }
       }
+    }
 
-      if(isOk)
-      {
-        next();
-      }
-      else
-      {
-        res.status(422).send({status: "ERROR", response: "Messages malformed"});
-      }
+    if(isOk)
+    {
+      next();
     }
     else
     {
@@ -320,3 +403,5 @@ function storage(req, res, next)
 
 module.exports.updateCollection = updateCollection;
 module.exports.storage          = storage;
+module.exports.message          = message;
+module.exports.validateMessage  = validateMessage;

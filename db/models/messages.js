@@ -3,13 +3,15 @@
 * Matias P. Sassi @ tween (6/2015)
 * Messages model funtions.
 */
-var C = require('../../helpers/constants'),
-    Log      = require('log'),
-    log      = new Log();
+var C   = require("../../helpers/constants"),
+    Log = require("log"),
+    log = new Log();
 
-function getById(id, cb) {
-  var collection = db.collection('messages');
-  collection.find({msgId: id}, {}, {limit:1}).toArray(function(err, items) {
+function getById(id, cb)
+{
+  var collection = db.collection("messages");
+  collection.find({msgId: id}, {}, {limit:1}).toArray(function(err, items)
+  {
     if(err)
     {
       log.error(err);
@@ -18,87 +20,104 @@ function getById(id, cb) {
     else if(items && items.length > 0)
     {
       var message = items[0];
-      message.id = message._id;
+      message.id  = message._id;
       cb(message);
     }
    });
 }
 
-function getListById(id, cb) {
-  var collection = db.collection('messages');
-  collection.find({listId: id}).toArray(function(err, items) {
+function getListById(id, cb)
+{
+  var collection = db.collection("messages");
+  collection.find({listId: id}).toArray(function(err, items)
+  {
     if(err)
     {
       log.error(err);
       cb(false);
     }
-    else if(items && items.length > 0)
+    else
     {
-      var list = items[0];
-      list.id = list._id;
-      cb(list);
+      if(items && items.length > 0)
+      {
+        var list = items[0];
+        list.id = list._id;
+        cb(list);
+      }
+      else
+      {
+        cb(false);
+      }
     }
-    else cb(false);
    });
 }
 
-function getByCompanyId(options, cb) {
-  var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
-  var perPage = options.limit;
-  var collection = db.collection('messages');
+function getByCompanyId(options, cb)
+{
+  var pageNumber  = options.offset > 0 ? ((options.offset-1)*options.limit) : 0,
+      perPage     = options.limit,
+      collection  = db.collection("messages");
 
   collection.find({companyId: options.companyId}, {}, {limit: perPage})
     .sort({ $natural: 1 })
     .skip(pageNumber)
-    .toArray(function(err, items) {
+    .toArray(function(err, items)
+    {
       if(err)
       {
         log.error(err);
         cb(false);
       }
       else
+      {
         returnArrayResponse(items, cb);
+      }
     });
 }
 
-function getByPhone(companyId, options, cb) {
-  var pageNumber = options.offset > 0 ? ((options.offset-1)*options.limit) : 0;
-  var perPage = options.limit;
-  var collection = db.collection("messages");
+function getByPhone(companyId, options, cb)
+{
+  var pageNumber  = options.offset > 0 ? ((options.offset-1)*options.limit) : 0,
+      perPage     = options.limit,
+      collection  = db.collection("messages");
   collection.find({companyId: companyId, phone:options.phone}, {}, {limit: perPage})
     .sort({$natural: 1})
     .skip(pageNumber)
-    .toArray(function(err, items) {
+    .toArray(function(err, items)
+    {
       if(err)
       {
         log.error(err);
         cb(false);
       }
       else
+      {
         returnArrayResponse(items, cb);
+      }
     });
 }
 
-function getByPhoneWOCaptured(companyId, options, cb) {
-  var pageNumber = options.offset > 0 ? ((options.offset - 1) * options.limit) : 0;
-  var perPage    = options.limit;
-  var collection = db.collection("messages");
-  collection.find(
-    { "companyId": companyId, "phone": options.phone, "flags" : { $ne: [ C.CAPTURED, C.CAPTURED_PUSH ] } },
-    {}, {limit: perPage})
+function getByPhoneWOCaptured(companyId, options, cb)
+{
+  var pageNumber = options.offset > 0 ? ((options.offset - 1) * options.limit) : 0,
+      perPage    = options.limit,
+      collection = db.collection("messages");
+  collection.find({"companyId": companyId, "phone": options.phone, "flags" : { $ne: [ C.CAPTURED, C.CAPTURED_PUSH ] } }, {}, {limit: perPage})
     .sort({ $natural: 1 })
     .skip(pageNumber)
-    .toArray(function(err, items) {
+    .toArray(function(err, items)
+    {
       if(err)
       {
         log.error(err);
         cb(false);
       }
       else
+      {
         returnArrayResponse(items, cb);
+      }
     });
 }
-
 
 function returnArrayResponse(items, cb)
 {
@@ -107,12 +126,28 @@ function returnArrayResponse(items, cb)
     var messageArr = [];
     for(var message in items)
     {
-      message.id = message._id;
-      messageArr.push(messageArr);
+      //Agregado para excluir mensajes personales
+      if(message.flags && message.flags < C.CAPTURED)
+      {
+        message.id = message._id;
+        messageArr.push(messageArr);
+      }
+      else
+      {
+        if(message.captured && message.captured.status && message.captured.status !== C.MSG_PERSONAL)
+        {
+          message.id = message._id;
+          messageArr.push(messageArr);
+        }
+      }
     }
+
     cb(messageArr);
   }
-  else cb(false);
+  else
+  {
+    cb(false);
+  }
 }
 
 module.exports.getByCompanyId       = getByCompanyId;
