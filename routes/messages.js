@@ -15,6 +15,7 @@ var rabbit        = require("../amqp"),
     token         = config.backendBusiness.accessToken,
     Log           = require('log'),
     log           = new Log();
+const util    = require("util");
 
 function sendToPhone(req, res, next){
   var msgId = hat(60, 36);
@@ -29,35 +30,26 @@ function updateCollection(req, res)
       msg           = "",
       updateMsg     = {},
       status        = {},
-      ok            = true;
+      ok            = true,
+      msgsToSend    = [];
 
+  //Verificamos primero
   for(var i = 0; i < totalMessages; i++)
   {
     msg       = collection[i];
     //build the update object
     updateMsg = {"msgId": msg.id, "status": msg.status};
     status    = helper.timestampByState(msg.status);
-
     if(status !== "error")
     {
-      if(!updateMsg.hasOwnProperty("timestamp"))
+      if(!updateMsg.timestamp)
       {
         updateMsg.timestamp = {};
       }
 
       // add the timestamp to the update object by state number
       updateMsg.timestamp[status] = new Date().getTime();
-
-      // send the update object to rabbitmq
-      try
-      {
-        rabbit.update(updateMsg);
-      }
-      catch(e)
-      {
-        ok = false;
-        log.error(e);
-      }
+      msgsToSend.push(updateMsg);
     }
     else
     {
@@ -66,9 +58,24 @@ function updateCollection(req, res)
     }
   }
 
+  //Mandamos
   if(ok)
   {
+    var msgsToSendLenght = msgsToSend.length;
     res.status(201).send({status: "OK", response: "new saved state"});
+    for(var i = 0; i < msgsToSendLenght; i++)
+    {
+      try
+      {
+        rabbit.update(msgsToSend[i]);
+      }
+      catch(e)
+      {
+        log.error(e);
+        errorResponse(res, 422, "Status invalid");
+        break;
+      }
+    }
   }
   else
   {

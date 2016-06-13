@@ -16,23 +16,31 @@ function message(req, res, next)
   }
   else
   {
-    var phone = validatePhone(message.phone, res);
+    var phone = validatePhone(message.phone);
     if(phone)
     {
       message.phone = phone;
-      if(validateMessage(message, res))
+      if(validateMessage(message))
       {
-        next();
+        return next();
       }
+      else
+      {
+        errorResponse(res, "Missing/malformed phone.");
+      }
+    }
+    else
+    {
+      errorResponse(res, "Missing/malformed phone.");
     }
   }
 }
 
-function validatePhone(phone, res)
+function validatePhone(phone)
 {
   if(typeof phone === "undefined" || phone === "")
   {
-    errorResponse(res, "Missing/malformed phone.");
+    return false;
   }
   else
   {
@@ -43,18 +51,16 @@ function validatePhone(phone, res)
     if(!validator.isInt(phone))
     {
       log.info("not int");
-      errorResponse(res, "Missing/malformed phone.");
+      return false;
     }
     else
     {
       return phone.replace(/\D/g,"");
     }
   }
-
-  return false;
 }
 
-function validatePhones(phones, res)
+function validatePhones(phones)
 {
   var isOk = true;
 
@@ -62,7 +68,7 @@ function validatePhones(phones, res)
   {
     for(var i=0; i < phones.length; i++)
     {
-      var phone = validatePhone(phones[i], res);
+      var phone = validatePhone(phones[i]);
       if(phone)
       {
         phones[i] = phone;
@@ -85,7 +91,7 @@ function validatePhones(phones, res)
   }
 }
 
-function validateCountry(countryCode, phone, res)
+function validateCountry(countryCode, phone)
 {
   // if we have a countryCode (ISO)
   if(typeof countryCode !== "undefined" && countryCode !== "")
@@ -95,7 +101,6 @@ function validateCountry(countryCode, phone, res)
     if(countryCode.length > 3)
     {
       log.info("invalid countryCode");
-      errorResponse(res, "Missing/malformed countryCode.");
       return false;
     }
     else
@@ -105,7 +110,6 @@ function validateCountry(countryCode, phone, res)
           internationalPhone = (countryCodePrefix + "") + (phone + "");
       if(internationalPhone.length > constants.PHONE_LENGTH)
       {
-        errorResponse(res, "Malformed phone and countryCode combination.");
         return false;
       }
     }
@@ -115,7 +119,6 @@ function validateCountry(countryCode, phone, res)
     // if we don't have a countryCode we validate the phone length according to https://en.wikipedia.org/wiki/E.164
     if(phone.length > constants.PHONE_LENGTH)
     {
-      errorResponse(res, "Missing/malformed phone.");
       return false;
     }
   }
@@ -123,11 +126,11 @@ function validateCountry(countryCode, phone, res)
   return true;
 }
 
-function validateMessage(message, res)
+function validateMessage(message)
 {
   if(message.phone)
   {
-    if(!validateCountry(message.countryCode, message.phone, res))
+    if(!validateCountry(message.countryCode, message.phone))
     {
       return false;
     }
@@ -136,7 +139,7 @@ function validateMessage(message, res)
   {
     for(var i=0; i < message.phones.length; i++)
     {
-      if(!validateCountry(message.countryCode, message.phones[i], res))
+      if(!validateCountry(message.countryCode, message.phones[i]))
       {
         return false;
       }
@@ -146,35 +149,30 @@ function validateMessage(message, res)
   // the phone and countryCode (if present) are correct
   if(typeof message.msg === "undefined" || message.msg == "")
   {
-    errorResponse(res, "Missing/malformed message.");
     return false;
   }
   else
   {
     if(typeof message.flags === "undefined" || message.flags == "" || message.flags > constants.CAPTURED_PUSH)
     {
-      errorResponse(res, "Missing/malformed flags.");
       return false;
     }
     else
     {
       if(message.referenceId && typeof message.referenceId !== "undefined" && message.referenceId.length > constants.REFERENCEID_LENGTH)
       {
-        errorResponse(res, "Malformed referenceId.");
         return false;
       }
       else
       {
         if(message.ttd && typeof message.ttd !== "undefined" && message.ttd < 0)
         {
-          errorResponse(res, "Malformed ttd.");
           return false;
         }
         else
         {
           if(message.type && typeof message.type !== "undefined" && message.type == "")
           {
-            errorResponse(res, "Malformed type.");
             return false;
           }
 
@@ -183,13 +181,11 @@ function validateMessage(message, res)
           {
             if(isMessageStatusInvalid(message.status))
             {
-              errorResponse(res, "Malformed status.");
               return false;
             }
 
             if(message.from && typeof message.from !== "undefined" && message.from == "")
             {
-              errorResponse(res, "Malformed from.");
               return false;
             }
           }
@@ -219,69 +215,62 @@ function updateCollection(req, res, next)
   var collection  = req.body,
       errorExists = false;
 
-  if(_.isArray(collection))
+  if(_.isArray(collection) && collection.length)
   {
-    var totalMessges = collection.length;
+    var totalMessges  = collection.length,
+        msg           = "";
 
-    if(totalMessges > 0)
+    for(var i = 0; i < totalMessges; i++)
     {
-      var msg = "";
+      msg = collection[i];
 
-      for(var i = 0; i < totalMessges; i++)
+      if(msg.id && msg.status)
       {
-        msg = collection[i];
-
-        if(msg.hasOwnProperty("id") && msg.hasOwnProperty("status"))
+        if(typeof msg.id === "undefined")
         {
-          if(_.isUndefined(msg.id))
-          {
-            errorExists = true;
-            break;
-          }
-
-          if(isMessageStatusInvalid(msg.status))
-          {
-            errorExists = true;
-            break;
-          }
-
-          if(msg.hasOwnProperty("campaignId"))
-          {
-            if(_.isUndefined(msg.campaignId))
-            {
-              errorExists = true;
-              break;
-            }
-          }
-
-          if(msg.hasOwnProperty("listId"))
-          {
-            if(_.isUndefined(msg.listId))
-            {
-              errorExists = true;
-              break;
-            }
-          }
+          errorExists = true;
+          break;
         }
-        else
+
+        if(isMessageStatusInvalid(msg.status))
+        {
+          errorExists = true;
+          break;
+        }
+
+        if(msg.campaignId && typeof msg.campaignId === "undefined")
+        {
+          errorExists = true;
+          break;
+        }
+
+        if(msg.listId && typeof msg.listId === "undefined")
+        {
+          errorExists = true;
+          break;
+        }
+
+        //Agregado de coordenadas en la confirmación de lectura
+        if(msg.geographic && (typeof msg.geographic.latitude === "undefined" || typeof msg.geographic.longitude === "undefined"))
         {
           errorExists = true;
           break;
         }
       }
-
-      if(errorExists)
-      {
-        res.status(422).send({status: "ERROR", response: "Messages malformed"});
-      }
       else
       {
-        next();
+        errorExists = true;
+        break;
       }
+    }
+
+    if(errorExists)
+    {
+      res.status(422).send({status: "ERROR", response: "Messages malformed"});
     }
     else
     {
-      res.status(422).send({status: "ERROR", response: "Messages malformed"});
+      return next();
     }
   }
   else
@@ -318,7 +307,7 @@ function errorResponse(res, resDescription)
 
 function isMessageStatusInvalid(status)
 {
- //Se incorpora el status 6 para diferenciar mensajes personales
+  //Se incorpora el status 6 para diferenciar mensajes personales
   return (typeof status == "undefined" || status > constants.MSG_PERSONAL);
 }
 
@@ -351,9 +340,10 @@ function storage(req, res, next)
 {
   if(_.isArray(req.body) && req.body.length)
   {
-    var isOk = true;
+    var isOk          = true,
+        totalMessages = req.body.length;
 
-    for(var i=0; i < req.body.length; i++)
+    for(var i=0; i < totalMessages; i++)
     {
       if(!req.body[i].msg || !req.body[i].flags || !req.body[i].phones)
       {
@@ -362,12 +352,12 @@ function storage(req, res, next)
       }
       else
       {
-        var phones = validatePhones(req.body[i].phones, res);
+        var phones = validatePhones(req.body[i].phones);
 
         if(phones)
         {
           req.body[i].phones = phones;
-          if(!validateMessage(req.body[i], res))
+          if(!validateMessage(req.body[i]))
           {
             isOk = false;
             break;
@@ -383,7 +373,7 @@ function storage(req, res, next)
 
     if(isOk)
     {
-      next();
+      return next();
     }
     else
     {

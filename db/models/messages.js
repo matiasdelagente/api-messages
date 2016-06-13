@@ -123,8 +123,9 @@ function returnArrayResponse(items, cb)
 {
   if(items && items.length > 0)
   {
-    var messageArr = [];
-    for(var i=0; i<items.length; i++)
+    var messageArr    = [],
+        totalMessages = items.length;
+    for(var i=0; i<totalMessages; i++)
     {
       //Agregado para excluir mensajes personales
       if(items[i].flags && items[i].flags < C.CAPTURED)
