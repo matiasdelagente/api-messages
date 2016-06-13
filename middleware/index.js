@@ -125,8 +125,6 @@ function validateCountry(countryCode, phone, res)
 
 function validateMessage(message, res)
 {
-  var countryOk = true;
-
   if(message.phone)
   {
     if(!validateCountry(message.countryCode, message.phone, res))
@@ -145,9 +143,6 @@ function validateMessage(message, res)
     }
   }
 
-  console.log("valido phone y country ok");
-  return true;
-
   // the phone and countryCode (if present) are correct
   if(typeof message.msg === "undefined" || message.msg == "")
   {
@@ -156,28 +151,28 @@ function validateMessage(message, res)
   }
   else
   {
-    if(typeof message.flags === "undefined" || message.flags == "" || !validator.isInt(message.flags) || message.flags > constants.CAPTURED_PUSH)
+    if(typeof message.flags === "undefined" || message.flags == "" || message.flags > constants.CAPTURED_PUSH)
     {
       errorResponse(res, "Missing/malformed flags.");
       return false;
     }
     else
     {
-      if(typeof message.referenceId !== "undefined" && message.referenceId.length > constants.REFERENCEID_LENGTH)
+      if(message.referenceId && typeof message.referenceId !== "undefined" && message.referenceId.length > constants.REFERENCEID_LENGTH)
       {
         errorResponse(res, "Malformed referenceId.");
         return false;
       }
       else
       {
-        if(typeof message.ttd !== "undefined" && !validator.isInt(message.ttd))
+        if(message.ttd && typeof message.ttd !== "undefined" && message.ttd < 0)
         {
           errorResponse(res, "Malformed ttd.");
           return false;
         }
         else
         {
-          if(typeof message.type !== "undefined" && message.type == "")
+          if(message.type && typeof message.type !== "undefined" && message.type == "")
           {
             errorResponse(res, "Malformed type.");
             return false;
@@ -192,7 +187,7 @@ function validateMessage(message, res)
               return false;
             }
 
-            if(typeof message.from !== "undefined" && message.from == "")
+            if(message.from && typeof message.from !== "undefined" && message.from == "")
             {
               errorResponse(res, "Malformed from.");
               return false;
@@ -323,8 +318,8 @@ function errorResponse(res, resDescription)
 
 function isMessageStatusInvalid(status)
 {
-  //Se incorpora el status 6 para diferenciar mensajes personales
-  return (_.isUndefined(status) || !validator.isInt(status) || Math.abs(status) > constants.MSG_PERSONAL);
+ //Se incorpora el status 6 para diferenciar mensajes personales
+  return (typeof status == "undefined" || status > constants.MSG_PERSONAL);
 }
 
 function isMessageIdInvalid(id)

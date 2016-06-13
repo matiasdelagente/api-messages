@@ -124,20 +124,20 @@ function returnArrayResponse(items, cb)
   if(items && items.length > 0)
   {
     var messageArr = [];
-    for(var message in items)
+    for(var i=0; i<items.length; i++)
     {
       //Agregado para excluir mensajes personales
-      if(message.flags && message.flags < C.CAPTURED)
+      if(items[i].flags && items[i].flags < C.CAPTURED)
       {
-        message.id = message._id;
-        messageArr.push(messageArr);
+        items[i].id = items[i]._id;
+        messageArr.push(items[i]);
       }
       else
       {
-        if(message.captured && message.captured.status && message.captured.status !== C.MSG_PERSONAL)
+        if(items[i].captured && items[i].captured.status && items[i].captured.status !== C.MSG_PERSONAL)
         {
-          message.id = message._id;
-          messageArr.push(messageArr);
+          items[i].id = items[i]._id;
+          messageArr.push(items[i]);
         }
       }
     }
