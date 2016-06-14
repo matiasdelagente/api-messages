@@ -1,89 +1,213 @@
 var validator = require("validator"),
     _         = require("lodash"),
     helpers   = require("../helpers"),
-    Log       = require('log'),
+    constants = require("../helpers/constants"),
+    Log       = require("log"),
     log       = new Log();
 
-module.exports.message = function(req,res,next) {
+function message(req, res, next)
+{
   var message = req.body;
 
-  // it there is no phone or empty phone or just the + sign we fail
-  if(typeof message.phone === "undefined" || message.phone === "" || message.phone === "+")
+  //Modificación para reutilizar validación para las listas
+  if(!message.phone)
   {
-    return errorResponse(res, "Missing/malformed phone.");
+    errorResponse(res, "Missing/malformed phone.");
   }
-  // if the phone comes with the + at the beginning we remove it
-  else if(message.phone.startsWith("+"))
+  else
   {
-    message.phone = message.phone.substring(1);
+    var phone = validatePhone(message.phone);
+    if(phone)
+    {
+      message.phone = phone;
+      if(validateMessage(message))
+      {
+        return next();
+      }
+      else
+      {
+        errorResponse(res, "Missing/malformed phone.");
+      }
+    }
+    else
+    {
+      errorResponse(res, "Missing/malformed phone.");
+    }
+  }
+}
+
+function validatePhone(phone)
+{
+  if(typeof phone === "undefined" || phone === "")
+  {
+    return false;
+  }
+  else
+  {
+    // if the phone comes with the + at the beginning we remove it
+    phone = phone.replace("+", "");
+
+    // if the phone is not an integer we fail
+    if(!validator.isInt(phone))
+    {
+      log.info("not int");
+      return false;
+    }
+    else
+    {
+      return phone.replace(/\D/g,"");
+    }
+  }
+}
+
+function validatePhones(phones)
+{
+  var isOk = true;
+
+  if(_.isArray(phones) && phones.length)
+  {
+    for(var i=0; i < phones.length; i++)
+    {
+      var phone = validatePhone(phones[i]);
+      if(phone)
+      {
+        phones[i] = phone;
+      }
+      else
+      {
+        isOk = false;
+        break;
+      }
+    }
   }
 
-  // if the phone is not an integer we fail
-  if(!validator.isInt(message.phone))
+  if(isOk)
   {
-    log.info("not int");
-    return errorResponse(res, "Missing/malformed phone.");
+    return phones;
   }
-  // if we have a countryCode (ISO)
-  if(typeof message.countryCode !== "undefined" && message.countryCode !== "")
+  else
   {
-    // we validate the countryCode
-    // according to https://en.wikipedia.org/wiki/E.164
-    var countryCode = message.countryCode + "";
+    return false;
+  }
+}
+
+function validateCountry(countryCode, phone)
+{
+  // if we have a countryCode (ISO)
+  if(typeof countryCode !== "undefined" && countryCode !== "")
+  {
+    // we validate the countryCode according to https://en.wikipedia.org/wiki/E.164
+    countryCode = countryCode + "";
     if(countryCode.length > 3)
     {
       log.info("invalid countryCode");
-      return errorResponse(res, "Missing/malformed countryCode.");
+      return false;
     }
     else
     {
       // if we have both countryCode and phone we validate both of them
       var countryCodePrefix  = helpers.countryCode(countryCode),
-          internationalPhone = (countryCodePrefix + "") + (message.phone + "");
-      if(internationalPhone.length > 15)
+          internationalPhone = (countryCodePrefix + "") + (phone + "");
+      if(internationalPhone.length > constants.PHONE_LENGTH)
       {
-        return errorResponse(res, "Malformed phone and countryCode combination.");
+        return false;
       }
     }
   }
-  // if we don't have a countryCode we validate the phone length
-  // according to https://en.wikipedia.org/wiki/E.164
-  else if(message.phone.length > 15)
+  else
   {
-    return errorResponse(res, "Missing/malformed phone.");
+    // if we don't have a countryCode we validate the phone length according to https://en.wikipedia.org/wiki/E.164
+    if(phone.length > constants.PHONE_LENGTH)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function validateMessage(message)
+{
+  if(message.phone)
+  {
+    if(!validateCountry(message.countryCode, message.phone))
+    {
+      return false;
+    }
+  }
+  else
+  {
+    for(var i=0; i < message.phones.length; i++)
+    {
+      if(!validateCountry(message.countryCode, message.phones[i]))
+      {
+        return false;
+      }
+    }
   }
 
   // the phone and countryCode (if present) are correct
   if(typeof message.msg === "undefined" || message.msg == "")
   {
-    return errorResponse(res, "Missing/malformed message.");
-  }
-  else if(typeof message.flags === "undefined" || message.flags == "" || !validator.isInt(message.flags) || message.flags > 5)
-  {
-    return errorResponse(res, "Missing/malformed flags.");
-  }
-  else if(typeof message.referenceId !== "undefined" && message.referenceId.length > 30)
-  {
-    return errorResponse(res, "Malformed referenceId.");
-  }
-  else if(typeof message.ttd !== "undefined" && !validator.isInt(message.ttd))
-  {
-    return errorResponse(res, "Malformed ttd.");
+    return false;
   }
   else
   {
-    req.body.phone = message.phone.replace(/\D/g,"");
-    next();
+    if(typeof message.flags === "undefined" || message.flags == "" || message.flags > constants.CAPTURED_PUSH)
+    {
+      return false;
+    }
+    else
+    {
+      if(message.referenceId && typeof message.referenceId !== "undefined" && message.referenceId.length > constants.REFERENCEID_LENGTH)
+      {
+        return false;
+      }
+      else
+      {
+        if(message.ttd && typeof message.ttd !== "undefined" && message.ttd < 0)
+        {
+          return false;
+        }
+        else
+        {
+          if(message.type && typeof message.type !== "undefined" && message.type == "")
+          {
+            return false;
+          }
+
+          //Si el flag es constants.CAPTURED se valida status y from
+          if(message.flags == constants.CAPTURED)
+          {
+            if(isMessageStatusInvalid(message.status))
+            {
+              return false;
+            }
+
+            if(message.from && typeof message.from !== "undefined" && message.from == "")
+            {
+              return false;
+            }
+          }
+
+          return true;
+        }
+      }
+    }
   }
-};
+}
 
-
-module.exports.deleteMessage = function(req,res,next) {
+module.exports.deleteMessage = function(req,res,next)
+{
   var id = req.params.id;
-   if(isMessageIdInvalid(id))
+  if(isMessageIdInvalid(id))
+  {
     errorResponse(res, "Missing/malformed msgId.");
+  }
   else
+  {
     next();
+  }
 };
 
 function updateCollection(req, res, next)
@@ -91,65 +215,165 @@ function updateCollection(req, res, next)
   var collection  = req.body,
       errorExists = false;
 
-  if(_.isArray(collection))
+  if(_.isArray(collection) && collection.length)
   {
-    var totalMessges = collection.length;
+    var totalMessges  = collection.length,
+        msg           = "";
 
-    if(totalMessges > 0)
+    for(var i = 0; i < totalMessges; i++)
     {
-      var msg = "";
+      msg = collection[i];
 
-      for(var i = 0; i < totalMessges; i++)
+      if(msg.id && msg.status)
       {
-        msg = collection[i];
-
-        if(msg.hasOwnProperty("id") && msg.hasOwnProperty("status"))
+        if(typeof msg.id === "undefined")
         {
-          if(_.isUndefined(msg.id))
-          {
-            errorExists = true;
-            break;
-          }
-
-          if(isMessageStatusInvalid(msg.status))
-          {
-            errorExists = true;
-            break;
-          }
-
-          if(msg.hasOwnProperty("campaignId"))
-          {
-            if(_.isUndefined(msg.campaignId))
-            {
-              errorExists = true;
-              break;
-            }
-          }
-
-          if(msg.hasOwnProperty("listId"))
-          {
-            if(_.isUndefined(msg.listId))
-            {
-              errorExists = true;
-              break;
-            }
-          }
+          errorExists = true;
+          break;
         }
-        else
+
+        if(isMessageStatusInvalid(msg.status))
+        {
+          errorExists = true;
+          break;
+        }
+
+        if(msg.campaignId && typeof msg.campaignId === "undefined")
+        {
+          errorExists = true;
+          break;
+        }
+
+        if(msg.listId && typeof msg.listId === "undefined")
+        {
+          errorExists = true;
+          break;
+        }
+
+        //Agregado de coordenadas en la confirmación de lectura
+        if(msg.geographic && (typeof msg.geographic.latitude === "undefined" || typeof msg.geographic.longitude === "undefined"))
         {
           errorExists = true;
           break;
         }
       }
-
-      if(errorExists)
+      else
       {
-        res.status(422).send({status: "ERROR", response: "Messages malformed"});
+        errorExists = true;
+        break;
+      }
+    }
+
+    if(errorExists)
+    {
+      res.status(422).send({status: "ERROR", response: "Messages malformed"});
+    }
+    else
+    {
+      return next();
+    }
+  }
+  else
+  {
+    res.status(422).send({status: "ERROR", response: "Messages malformed"});
+  }
+}
+
+module.exports.update = function(req,res,next)
+{
+  var message = req.body,
+      id      = req.params.id;
+  if(isMessageIdInvalid(id))
+  {
+    errorResponse(res, "Missing/malformed msgId.");
+  }
+  else
+  {
+    if(isMessageStatusInvalid(message.status))
+    {
+      errorResponse(res, "Missing/malformed status.");
+    }
+    else
+    {
+      next();
+    }
+  }
+};
+
+function errorResponse(res, resDescription)
+{
+  res.status(422).send({ type: "Unprocessable request", description: resDescription});
+}
+
+function isMessageStatusInvalid(status)
+{
+  //Se incorpora el status 6 para diferenciar mensajes personales
+  return (typeof status == "undefined" || status > constants.MSG_PERSONAL);
+}
+
+function isMessageIdInvalid(id)
+{
+  return (!(id.length >= 32) || !validator.isAlphanumeric(id));
+}
+
+module.exports.get = function(req,res,next)
+{
+  var id = req.params.id;
+  if(isMessageIdInvalid(id))
+  {
+    errorResponse(res, "Missing/malformed msgId.");
+  }
+  else
+  {
+    next();
+  }
+};
+
+module.exports.infobip = function(req, res, next)
+{
+  // TODO: implement validations for message fields
+  next();
+};
+
+//Agregado para validar campos recibidos en la api-storage
+function storage(req, res, next)
+{
+  if(_.isArray(req.body) && req.body.length)
+  {
+    var isOk          = true,
+        totalMessages = req.body.length;
+
+    for(var i=0; i < totalMessages; i++)
+    {
+      if(!req.body[i].msg || !req.body[i].flags || !req.body[i].phones)
+      {
+        isOk = false;
+        break;
       }
       else
       {
-        next();
+        var phones = validatePhones(req.body[i].phones);
+
+        if(phones)
+        {
+          req.body[i].phones = phones;
+          if(!validateMessage(req.body[i]))
+          {
+            isOk = false;
+            break;
+          }
+        }
+        else
+        {
+          isOk = false;
+          break;
+        }
       }
+    }
+
+    if(isOk)
+    {
+      return next();
     }
     else
     {
@@ -162,42 +386,7 @@ function updateCollection(req, res, next)
   }
 }
 
-module.exports.update = function(req,res,next) {
-  var message = req.body,
-      id      = req.params.id;
-   if(isMessageIdInvalid(id))
-    errorResponse(res, "Missing/malformed msgId.");
-  else if(isMessageStatusInvalid(message.status))
-    errorResponse(res, "Missing/malformed status.");
-  else next();
-};
-
-function errorResponse(res, resDescription)
-{
-  res.status(422).send({ type: "Unprocessable request", description: resDescription});
-}
-
-function isMessageStatusInvalid(status)
-{
-  return (status === undefined || Math.abs(status) > 5);
-}
-
-function isMessageIdInvalid(id)
-{
-  return (!(id.length >= 32) || !validator.isAlphanumeric(id));
-}
-
-module.exports.get = function(req,res,next) {
-  var id = req.params.id;
-  if(isMessageIdInvalid(id))
-    errorResponse(res, "Missing/malformed msgId.");
-  else next();
-};
-
-module.exports.infobip = function(req, res, next)
-{
-  // TODO: implement validations for message fields
-  next();
-};
-
 module.exports.updateCollection = updateCollection;
+module.exports.storage          = storage;
+module.exports.message          = message;
+module.exports.validateMessage  = validateMessage;
