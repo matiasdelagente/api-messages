@@ -222,7 +222,6 @@ function errorResponse(res, statusCode, message)
 
 //msg sender function
 function singleSender(req, msgId){
-  log.info("singleSender");
   var msg       = req.body,
       company   = req.companyId,
       username  = req.username,
