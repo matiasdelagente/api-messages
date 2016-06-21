@@ -54,5 +54,6 @@ define("LIST_CREATING",           1);
 define("LIST_READY",              2);
 /* Socket.io */
 define("SOCKETIO_ROOMNAMEPREFIX", "company room : ");
+define("COUNTRY_CODE_LENGTH",     3);
 define("PHONE_LENGTH",            15);
 define("REFERENCEID_LENGTH",      30);

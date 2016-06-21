@@ -28,7 +28,7 @@ module.exports.connect= function(amqpConfig)
       ch.assertExchange(amqpConfig.exchanges.delayedMessages.name, "x-delayed-message",
                        {"autoDelete": false, "durable": true, "passive": true,
                         "arguments": {'x-delayed-type': amqpConfig.exchanges.delayedMessages.type}}, assertCallback);
-      //Bind the queue: "messages" to the exchnage: "delayedMessages" with no binding key
+      //Bind the queue: "messages" to the exchange: "delayedMessages" with no binding key
       ch.bindQueue(amqpConfig.queues.msg, amqpConfig.exchanges.delayedMessages.name, "");
     });
   });

@@ -50,7 +50,6 @@ function validatePhone(phone)
     // if the phone is not an integer we fail
     if(!validator.isInt(phone))
     {
-      log.info("not int");
       return false;
     }
     else
@@ -91,16 +90,15 @@ function validatePhones(phones)
   }
 }
 
-function validateCountry(countryCode, phone)
+function validateCountryCodeAndPhone(countryCode, phone)
 {
   // if we have a countryCode (ISO)
   if(typeof countryCode !== "undefined" && countryCode !== "")
   {
     // we validate the countryCode according to https://en.wikipedia.org/wiki/E.164
     countryCode = countryCode + "";
-    if(countryCode.length > 3)
+    if(countryCode.length > constants.COUNTRY_CODE_LENGTH)
     {
-      log.info("invalid countryCode");
       return false;
     }
     else
@@ -130,7 +128,7 @@ function validateMessage(message)
 {
   if(message.phone)
   {
-    if(!validateCountry(message.countryCode, message.phone))
+    if(!validateCountryCodeAndPhone(message.countryCode, message.phone))
     {
       return false;
     }
@@ -139,7 +137,7 @@ function validateMessage(message)
   {
     for(var i=0; i < message.phones.length; i++)
     {
-      if(!validateCountry(message.countryCode, message.phones[i]))
+      if(!validateCountryCodeAndPhone(message.countryCode, message.phones[i]))
       {
         return false;
       }
@@ -336,7 +334,7 @@ module.exports.infobip = function(req, res, next)
 };
 
 //Agregado para validar campos recibidos en la api-storage
-function storage(req, res, next)
+function sendMessagesList(req, res, next)
 {
   if(_.isArray(req.body) && req.body.length)
   {
@@ -373,7 +371,7 @@ function storage(req, res, next)
 
     if(isOk)
     {
-      return next();
+      next();
     }
     else
     {
@@ -387,6 +385,6 @@ function storage(req, res, next)
 }
 
 module.exports.updateCollection = updateCollection;
-module.exports.storage          = storage;
+module.exports.sendMessagesList = sendMessagesList;
 module.exports.message          = message;
 module.exports.validateMessage  = validateMessage;

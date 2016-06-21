@@ -17,7 +17,8 @@ var rabbit        = require("../amqp"),
     log           = new Log();
 const util    = require("util");
 
-function sendToPhone(req, res, next){
+function sendToPhone(req, res, next)
+{
   var msgId = hat(60, 36);
   singleSender(req, msgId, req.companyId);
   res.status(201).send({response: "mensaje enviado corectamente", 'msgId': msgId, 'referenceId' : req.body.referenceId});
@@ -83,8 +84,8 @@ function updateCollection(req, res)
   }
 }
 
-function updateByMsgIdAndStatus(req, res, next){
-
+function updateByMsgIdAndStatus(req, res, next)
+{
   //build the update object
   var updateMsg = {'msgId': req.params.id, 'status': req.body.status},
       status = helper.timestampByState(req.body.status);
@@ -104,7 +105,8 @@ function updateByMsgIdAndStatus(req, res, next){
   }
 }
 
-function deleteById(req, res, next){
+function deleteById(req, res, next)
+{
   messagesModel.getById(req.params.id, function(msg){
     if(msg !== false)
     {
@@ -121,7 +123,8 @@ function deleteById(req, res, next){
   });
 }
 
-function getById(req, res, next){
+function getById(req, res, next)
+{
   messagesModel.getById(req.params.id, function(msg){
     if(msg !== false) {
       res.status(200).send(msg);
@@ -131,7 +134,8 @@ function getById(req, res, next){
   });
 }
 
-function getByCompanyId(req, res, next){
+function getByCompanyId(req, res, next)
+{
   messagesModel.getByCompanyId(req.query, function(msgs){
     if(msgs !== false) {
       res.status(200).send(msgs);
@@ -141,20 +145,19 @@ function getByCompanyId(req, res, next){
   });
 }
 
-function getByPhone(req, res, next) {
-  messagesModel.getByPhone(req.params.companyId, req.query,
-    function (msgs)
+function getByPhone(req, res, next)
+{
+  messagesModel.getByPhone(req.params.companyId, req.query, function (msgs)
+  {
+    if (msgs !== false)
     {
-      if (msgs !== false)
-      {
-        res.status(200).send(msgs);
-      }
-      else
-      {
-        errorResponse(res, 404, "Messages not found for company " + req.params.companyId);
-      }
+      res.status(200).send(msgs);
     }
-  );
+    else
+    {
+      errorResponse(res, 404, "Messages not found for company " + req.params.companyId);
+    }
+  });
 }
 
 function getByPhoneWOCaptured(req, res, next)
@@ -165,6 +168,7 @@ function getByPhoneWOCaptured(req, res, next)
     res.status(200).send({"response": "processing"});
     var companyId = req.params.companyId;
     messagesModel.getByPhoneWOCaptured(companyId, req.query, callbackPhones);
+
     function callbackPhones(msgs)
     {
       var response     = {};
@@ -180,6 +184,7 @@ function getByPhoneWOCaptured(req, res, next)
         response.message = "messages.notFound";
         response.data    = JSON.stringify([]);
       }
+
       var endpoint = callbackVersion.toString().replace(":companyId", companyId.toString());
       var environment = process.env.NODE_ENV || false, secure = false;
       if(environment === "development")
@@ -199,19 +204,17 @@ function getByPhoneWOCaptured(req, res, next)
   }
   else
   {
-    messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query,
-      function (msgs)
+    messagesModel.getByPhoneWOCaptured(req.params.companyId, req.query, function (msgs)
+    {
+      if(msgs !== false)
       {
-        if (msgs !== false)
-        {
-          res.status(200).send(msgs);
-        }
-        else
-        {
-          errorResponse(res, 404, "Messages not found for company " + req.params.companyId);
-        }
+        res.status(200).send(msgs);
       }
-    );
+      else
+      {
+        errorResponse(res, 404, "Messages not found for company " + req.params.companyId);
+      }
+    });
   }
 }
 
@@ -221,8 +224,8 @@ function errorResponse(res, statusCode, message)
 }
 
 //msg sender function
-function singleSender(req, msgId){
-  log.info("singleSender");
+function singleSender(req, msgId)
+{
   var msg       = req.body,
       company   = req.companyId,
       username  = req.username,
@@ -242,7 +245,8 @@ function singleSender(req, msgId){
       };
 
     // si son sms que la app esta enviando como sms choreados, guardamos extras
-    if(msg.flags == C.CAPTURED){
+    if(msg.flags == C.CAPTURED)
+    {
       message.captured = helper.fillCapturedExtras(msg);
       send = false;
     }
