@@ -9,13 +9,15 @@ var hat             = require('hat').rack(),
     C               = require('../helpers/constants'),
     messagesModel   = require('../db/models/messages');
 
-module.exports.send = function(req, res, next) {
+module.exports.send = function(req, res, next)
+{
   var msgId = hat(60, 36);
   res.status(201).send({status: 'ok', response: 'List being processed', 'msgListID': msgId});
   listSender(req, msgId);
 }
 
-module.exports.get = function(req, res, next) {
+module.exports.get = function(req, res, next)
+{
   messagesModel.getListById(req.params.id, function(list)
   {
     if(list !== false)
