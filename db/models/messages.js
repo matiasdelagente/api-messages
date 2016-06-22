@@ -29,7 +29,7 @@ function getById(id, cb)
 function getListById(id, cb)
 {
   var collection = db.collection("messages");
-  collection.find({listId: id}).toArray(function(err, items)
+  collection.find({"listId": id}).toArray(function(err, items)
   {
     if(err)
     {
@@ -40,9 +40,7 @@ function getListById(id, cb)
     {
       if(items && items.length > 0)
       {
-        var list = items[0];
-        list.id = list._id;
-        cb(list);
+        cb(items);
       }
       else
       {
