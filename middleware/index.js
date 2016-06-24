@@ -195,7 +195,7 @@ function validateMessage(message)
   }
 }
 
-module.exports.deleteMessage = function(req,res,next)
+function deleteMessage(req,res,next)
 {
   var id = req.params.id;
   if(isMessageIdInvalid(id))
@@ -206,7 +206,7 @@ module.exports.deleteMessage = function(req,res,next)
   {
     next();
   }
-};
+}
 
 function updateCollection(req, res, next)
 {
@@ -247,13 +247,6 @@ function updateCollection(req, res, next)
           errorExists = true;
           break;
         }
-
-        //Agregado de coordenadas en la confirmación de lectura
-        if(msg.geographic && (typeof msg.geographic.latitude === "undefined" || typeof msg.geographic.longitude === "undefined"))
-        {
-          errorExists = true;
-          break;
-        }
       }
       else
       {
@@ -277,7 +270,7 @@ function updateCollection(req, res, next)
   }
 }
 
-module.exports.update = function(req,res,next)
+function update(req, res, next)
 {
   var message = req.body,
       id      = req.params.id;
@@ -293,10 +286,26 @@ module.exports.update = function(req,res,next)
     }
     else
     {
-      next();
+      //Agregado de coordenadas en la confirmación de lectura
+      if(message.geographic && (typeof message.geographic.latitude === "undefined" || typeof message.geographic.longitude === "undefined"))
+      {
+        errorResponse(res, "Missing/malformed geographic.");
+      }
+      else
+      {
+        //Agregado de confirmación de dispacher
+        if(message.confirmed && (typeof message.confirmed === "undefined"))
+        {
+          errorResponse(res, "Missing/malformed dispacher.");
+        }
+        else
+        {
+          return next();
+        }
+      }
     }
   }
-};
+}
 
 function errorResponse(res, resDescription)
 {
@@ -314,7 +323,7 @@ function isMessageIdInvalid(id)
   return (!(id.length >= 32) || !validator.isAlphanumeric(id));
 }
 
-module.exports.get = function(req,res,next)
+function get(req,res,next)
 {
   var id = req.params.id;
   if(isMessageIdInvalid(id))
@@ -325,13 +334,13 @@ module.exports.get = function(req,res,next)
   {
     next();
   }
-};
+}
 
-module.exports.infobip = function(req, res, next)
+function infobip(req, res, next)
 {
   // TODO: implement validations for message fields
   next();
-};
+}
 
 //Agregado para validar campos recibidos en la api-storage
 function sendMessagesList(req, res, next)
@@ -388,3 +397,7 @@ module.exports.updateCollection = updateCollection;
 module.exports.sendMessagesList = sendMessagesList;
 module.exports.message          = message;
 module.exports.validateMessage  = validateMessage;
+module.exports.update           = update;
+module.exports.infobip          = infobip;
+module.exports.get              = get;
+module.exports.deleteMessage    = deleteMessage;
