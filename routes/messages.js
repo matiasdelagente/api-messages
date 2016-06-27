@@ -98,7 +98,16 @@ function updateByMsgIdAndStatus(req, res)
       updateMsg.timestamp = {};
     }
 
-    //Agregar campos geo
+    //Agregado de campos nuevos para reportar localización y confirmación de módulo de dispacher
+    if(req.body.geographic)
+    {
+      updateMsg.geographic = req.body.geographic;
+    }
+
+    if(req.body.confirmed)
+    {
+      updateMsg.confirmed = req.body.confirmed;
+    }
     
     // add the timestamp to the update object by state number
     updateMsg.timestamp[status] = new Date().getTime();

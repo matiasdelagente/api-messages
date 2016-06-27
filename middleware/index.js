@@ -274,6 +274,7 @@ function update(req, res, next)
 {
   var message = req.body,
       id      = req.params.id;
+
   if(isMessageIdInvalid(id))
   {
     errorResponse(res, "Missing/malformed msgId.");
