@@ -288,9 +288,10 @@ function update(req, res, next)
     else
     {
       //Agregado de coordenadas en la confirmación de lectura
-      if(message.geographic && (typeof message.geographic.latitude === "undefined" || typeof message.geographic.longitude === "undefined"))
+      if( message.geolocalization && (typeof message.geolocalization.latitude === "undefined" || typeof message.geolocalization.longitude === "undefined" || _.isNaN(message.geolocalization.latitude ||
+          _.isNaN(message.geolocalization.longitude))))
       {
-        errorResponse(res, "Missing/malformed geographic.");
+        errorResponse(res, "Missing/malformed geolocalization.");
       }
       else
       {

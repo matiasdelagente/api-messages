@@ -98,21 +98,26 @@ function updateByMsgIdAndStatus(req, res)
       updateMsg.timestamp = {};
     }
 
+    var response = {response: "Message updated", "status": req.body.status, "msgId": req.params.id};
+
     //Agregado de campos nuevos para reportar localización y confirmación de módulo de dispacher
-    if(req.body.geographic)
+    if(req.body.geolocalization)
     {
-      updateMsg.geographic = req.body.geographic;
+      updateMsg.geolocalization = req.body.geolocalization;
+      response.geolocalization = req.body.geolocalization;
     }
 
     if(req.body.confirmed)
     {
       updateMsg.confirmed = req.body.confirmed;
+      response.confirmed = req.body.confirmed;
     }
     
     // add the timestamp to the update object by state number
     updateMsg.timestamp[status] = new Date().getTime();
+
     // finally send the http response
-    res.status(201).send({response: "Message updated", "status": req.body.status, "msgId": req.params.id});
+    res.status(201).send(response);
     // send the update object to rabbitmq
     try
     {
@@ -141,7 +146,15 @@ function deleteById(req, res)
       // finally send the http response
       res.status(200).send({response: "Message deleted", "status": req.body.status, "msgId": req.params.id});
       // send the update object to rabbitmq
-      rabbit.update(updateMsg);
+      try
+      {
+        rabbit.update(updateMsg);
+      }
+      catch(e)
+      {
+        log.error(e);
+        errorResponse(res, 404, "Message not found");
+      }
     }
     else
     {
@@ -282,14 +295,21 @@ function singleSender(req, msgId)
         companyId   : company
       };
 
-    // si son sms que la app esta enviando como sms choreados, guardamos extras
-    if(msg.flags == C.CAPTURED)
-    {
-      message.captured = helper.fillCapturedExtras(msg);
-      send = false;
-    }
+  // si son sms que la app esta enviando como sms choreados, guardamos extras
+  if(msg.flags == C.CAPTURED)
+  {
+    message.captured = helper.fillCapturedExtras(msg);
+    send = false;
+  }
 
+  try
+  {
     rabbit.send(message, send);
+  }
+  catch(e)
+  {
+    log.error(e);
+  }
 }
 
 module.exports.delete               = deleteById;
