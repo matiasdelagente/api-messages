@@ -13,15 +13,14 @@ var rabbit        = require("../amqp"),
     port          = config.backendBusiness.port,
     version       = config.backendBusiness.version,
     token         = config.backendBusiness.accessToken,
-    Log           = require('log'),
+    Log           = require("log"),
     log           = new Log();
-const util    = require("util");
 
-function sendToPhone(req, res, next)
+function sendToPhone(req, res)
 {
   var msgId = hat(60, 36);
   singleSender(req, msgId, req.companyId);
-  res.status(201).send({response: "mensaje enviado corectamente", 'msgId': msgId, 'referenceId' : req.body.referenceId});
+  res.status(201).send({response: "mensaje enviado corectamente", "msgId": msgId, "referenceId" : req.body.referenceId});
 }
 
 function updateCollection(req, res)
@@ -32,15 +31,17 @@ function updateCollection(req, res)
       updateMsg     = {},
       status        = {},
       ok            = true,
-      msgsToSend    = [];
+      msgsToSend    = [],
+      i             = 0;
 
   //Verificamos primero
-  for(var i = 0; i < totalMessages; i++)
+  for(i = 0; i < totalMessages; i++)
   {
     msg       = collection[i];
     //build the update object
     updateMsg = {"msgId": msg.id, "status": msg.status};
     status    = helper.timestampByState(msg.status);
+
     if(status !== "error")
     {
       if(!updateMsg.timestamp)
@@ -64,7 +65,7 @@ function updateCollection(req, res)
   {
     var msgsToSendLenght = msgsToSend.length;
     res.status(201).send({status: "OK", response: "new saved state"});
-    for(var i = 0; i < msgsToSendLenght; i++)
+    for(i = 0; i < msgsToSendLenght; i++)
     {
       try
       {
@@ -84,70 +85,117 @@ function updateCollection(req, res)
   }
 }
 
-function updateByMsgIdAndStatus(req, res, next)
+function updateByMsgIdAndStatus(req, res)
 {
   //build the update object
-  var updateMsg = {'msgId': req.params.id, 'status': req.body.status},
+  var updateMsg = {"msgId": req.params.id, "status": req.body.status},
       status = helper.timestampByState(req.body.status);
 
   if(status !== "error")
   {
-    if(!updateMsg.hasOwnProperty("timestamp")) updateMsg.timestamp = {};
+    if(!updateMsg.timestamp)
+    {
+      updateMsg.timestamp = {};
+    }
+
+    var response = {response: "Message updated", "status": req.body.status, "msgId": req.params.id};
+
+    //Agregado de campos nuevos para reportar localización y confirmación de módulo de dispacher
+    if(req.body.geolocalization)
+    {
+      updateMsg.geolocalization = req.body.geolocalization;
+      response.geolocalization = req.body.geolocalization;
+    }
+
+    if(req.body.confirmed)
+    {
+      updateMsg.confirmed = req.body.confirmed;
+      response.confirmed = req.body.confirmed;
+    }
+    
     // add the timestamp to the update object by state number
     updateMsg.timestamp[status] = new Date().getTime();
-    // send the update object to rabbitmq
-    rabbit.update(updateMsg);
+
     // finally send the http response
-    res.status(201).send({response: "Message updated", 'status': req.body.status, 'msgId': req.params.id});
+    res.status(201).send(response);
+    // send the update object to rabbitmq
+    try
+    {
+      rabbit.update(updateMsg);
+    }
+    catch(e)
+    {
+      log.error(e);
+      errorResponse(res, 422, "Status invalid");
+    }
   }
-  else {
+  else
+  {
     errorResponse(res, 422, "Invalid status");
   }
 }
 
-function deleteById(req, res, next)
+function deleteById(req, res)
 {
-  messagesModel.getById(req.params.id, function(msg){
+  messagesModel.getById(req.params.id, function(msg)
+  {
     if(msg !== false)
     {
       // build the update object
-      var updateMsg = {'msgId':req.params.id, 'disabled': true, timestamp: {disabled: new Date().getTime()} };
-      // send the update object to rabbitmq
-      rabbit.update(updateMsg);
+      var updateMsg = {"msgId":req.params.id, "disabled": true, timestamp: {disabled: new Date().getTime()} };
       // finally send the http response
-      res.status(200).send({response: "Message deleted", 'status': req.body.status, 'msgId': req.params.id});
+      res.status(200).send({response: "Message deleted", "status": req.body.status, "msgId": req.params.id});
+      // send the update object to rabbitmq
+      try
+      {
+        rabbit.update(updateMsg);
+      }
+      catch(e)
+      {
+        log.error(e);
+        errorResponse(res, 404, "Message not found");
+      }
     }
-    else {
+    else
+    {
       errorResponse(res, 404, "Message not found");
     }
   });
 }
 
-function getById(req, res, next)
+function getById(req, res)
 {
-  messagesModel.getById(req.params.id, function(msg){
-    if(msg !== false) {
+  messagesModel.getById(req.params.id, function(msg)
+  {
+    if(msg !== false)
+    {
       res.status(200).send(msg);
-    }else {
+    }
+    else
+    {
       errorResponse(res, 404, "Message not found");
     }
   });
 }
 
-function getByCompanyId(req, res, next)
+function getByCompanyId(req, res)
 {
-  messagesModel.getByCompanyId(req.query, function(msgs){
-    if(msgs !== false) {
+  messagesModel.getByCompanyId(req.query, function(msgs)
+  {
+    if(msgs !== false)
+    {
       res.status(200).send(msgs);
-    }else {
+    }
+    else
+    {
       errorResponse(res, 404, "Messages not found for company " + req.query.companyId);
     }
   });
 }
 
-function getByPhone(req, res, next)
+function getByPhone(req, res)
 {
-  messagesModel.getByPhone(req.params.companyId, req.query, function (msgs)
+  messagesModel.getByPhone(req.params.companyId, req.query, function(msgs)
   {
     if (msgs !== false)
     {
@@ -160,7 +208,7 @@ function getByPhone(req, res, next)
   });
 }
 
-function getByPhoneWOCaptured(req, res, next)
+function getByPhoneWOCaptured(req, res)
 {
   var callbackVersion = req.query.callbackVersion || false;
   if(callbackVersion)
@@ -173,6 +221,7 @@ function getByPhoneWOCaptured(req, res, next)
     {
       var response     = {};
       response.apiCall = C.API_CALL.toString();
+
       if (msgs !== false)
       {
         response.success = true;
@@ -185,8 +234,9 @@ function getByPhoneWOCaptured(req, res, next)
         response.data    = JSON.stringify([]);
       }
 
-      var endpoint = callbackVersion.toString().replace(":companyId", companyId.toString());
-      var environment = process.env.NODE_ENV || false, secure = false;
+      var endpoint    = callbackVersion.toString().replace(":companyId", companyId.toString()),
+          environment = process.env.NODE_ENV || false, secure = false;
+
       if(environment === "development")
       {
         secure = true;
@@ -231,7 +281,8 @@ function singleSender(req, msgId)
       username  = req.username,
       send      = true,
       code      = (typeof msg.countryCode !== "undefined" && msg.countryCode !== "") ? helper.countryCode(msg.countryCode) : false,
-      message   = {
+      message   =
+      {
         payload     : helper.checkMessage(msg.msg),
         channel     : helper.checkChannel(msg.channel),
         referenceId : (typeof msg.referenceId !== "undefined" && msg.referenceId !== "") ? msg.referenceId : msgId,
@@ -244,14 +295,21 @@ function singleSender(req, msgId)
         companyId   : company
       };
 
-    // si son sms que la app esta enviando como sms choreados, guardamos extras
-    if(msg.flags == C.CAPTURED)
-    {
-      message.captured = helper.fillCapturedExtras(msg);
-      send = false;
-    }
+  // si son sms que la app esta enviando como sms choreados, guardamos extras
+  if(msg.flags == C.CAPTURED)
+  {
+    message.captured = helper.fillCapturedExtras(msg);
+    send = false;
+  }
 
+  try
+  {
     rabbit.send(message, send);
+  }
+  catch(e)
+  {
+    log.error(e);
+  }
 }
 
 module.exports.delete               = deleteById;
