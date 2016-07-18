@@ -287,9 +287,9 @@ function update(req, res, next)
     }
     else
     {
-      //Agregado de coordenadas en la confirmación de lectura
-      if( message.geolocalization && (typeof message.geolocalization.latitude === "undefined" || typeof message.geolocalization.longitude === "undefined" || _.isNaN(message.geolocalization.latitude ||
-          _.isNaN(message.geolocalization.longitude))))
+      //Agregado de coordenadas en la confirmación de lectura, se incluye la fuente de las coordenadas
+      if( message.geolocalization && (typeof message.geolocalization.latitude === "undefined" || typeof message.geolocalization.longitude === "undefined" || _.isNaN(message.geolocalization.latitude) ||
+          _.isNaN(message.geolocalization.longitude) || typeof message.geolocalization.source === "undefined"))
       {
         errorResponse(res, "Missing/malformed geolocalization.");
       }
