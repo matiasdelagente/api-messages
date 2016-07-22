@@ -1,25 +1,101 @@
 {
   "amqp":
-  {
-    "addr": "mq-push-testing",
-    "user": "admin",
-    "pass": "admin1234",
-    "queues":
+  [
     {
-      "log": "log",
-      "msg": "buffer",
-      "dlrInfobip": "infobip"
+      "name": "messages",
+      "addr": "mq-push-testing",
+      "user": "admin",
+      "pass": "admin1234",
+      "port": "",
+      "queues":
+      [
+        {
+          "name": "log",
+          "options":
+          {
+            "durable": true,
+            "maxPriority": 10
+          }
+        },
+        {
+          "name": "buffer",
+          "options":
+          {
+            "durable": true
+          }
+        }
+      ],
+      "exchanges":
+      [
+        {
+          "name": "delayedMessages",
+          "type": "x-delayed-message",
+          "alternateExchange" : "dlx",
+          "options":
+          {
+            "autoDelete": false,
+            "durable": true,
+            "passive": true,
+            "arguments":
+            {
+              "x-delayed-type": "fanout"
+            }
+          },
+          "bindings":
+          {
+            "queues":
+            [
+              {
+                "name" : "buffer"
+              }
+            ],
+            "exchanges":[]
+          }
+        }
+      ]
     },
-    "exchanges":
     {
-      "delayedMessages":
-      {
-        "name": "delayedMessages",
-        "type": "fanout",
-        "alternateExchange" : "dlx"
-      }
+      "name": "dlr",
+      "addr": "mq-push-testing",
+      "user": "admin",
+      "pass": "admin1234",
+      "port": "",
+      "queues":
+      [
+        {
+          "name": "dlr",
+          "options":
+          {
+            "durable": true
+          }
+        }
+      ],
+      "exchanges":
+      [
+        {
+          "name": "dlr",
+          "type": "topic",
+          "options":
+          {
+            "autoDelete": false,
+            "durable": true,
+            "passive": true
+          },
+          "bindings":
+          {
+            "queues":
+            [
+              {
+                "name" : "dlr",
+                "routingKey" : "*"
+              }
+            ],
+            "exchanges":[]
+          }
+        }
+      ]
     }
-  },
+  ],
   "app":
   {
     "port": "3002",

@@ -9,6 +9,7 @@ var messages    = require("./routes/messages"),
 
 //POST
 router.post("/messages/callbacks/infobip", middleware.infobip, callbacks.infobip);
+router.post("/messages/callbacks/nexmo", middleware.nexmo, callbacks.nexmo);
 router.post("/messages/lists", oauth2.authorise, middleware.sendMessagesList, list.send);
 router.post("/messages/list", oauth2.authorise, middleware.sendMessagesList, list.send); //momentaneo hasta que todos usen la de arriba
 router.post("/messages/campaigns", oauth2.authorise, campaigns.send);
