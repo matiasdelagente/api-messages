@@ -11,11 +11,18 @@ module.exports.infobip = function(req, res)
   res.status(200).send();
 }
 
-
 module.exports.nexmo = function(req, res)
 {
   var dlr = req.body;
   dlr.smsSender = "nexmo";
   rabbit.sendToCallbackExchange(req.body, "x");
+  res.status(200).send();
+}
+
+module.exports.clickatell = function(req, res)
+{
+  var dlr = req.body;
+  dlr.smsSender = "clickatell";
+  rabbit.sendToCallbackExchange(req.body, "t");
   res.status(200).send();
 }
