@@ -1,28 +1,24 @@
 
 module.exports.setupAMQP = function(ch, amqpConfig, assertCallback)
 {
-  //console.log(amqpConfig);
   // assert the AMQP queues
-  //amqpConfig = JSON.parse(amqpConfig);
-  var queueData, exchangeData, bindingData, queueOptions;
+  var queueData, exchangeData, bindingData;
   for(var queue in amqpConfig.queues)
   {
     queueData = amqpConfig.queues[queue];
-    queueOptions = JSON.stringify(queueData.options);
-
-    //ch.assertQueue(queueData.name, queueOptions, assertCallback);
+    ch.assertQueue(queueData.name, queueData.options, assertCallback);
   }
 
   // assert the AMQP exchanges and it's bindings
-  var exchangeOptions;
+  var exchangeOptions, bindings, routingKey;
   for(var exchange in amqpConfig.exchanges)
   {
     exchangeData = amqpConfig.exchanges[exchange];
     exchangeOptions = JSON.stringify(exchangeData.options);
     ch.assertExchange(exchangeData.name, exchangeData.type, exchangeOptions, assertCallback);
     // the exchange->queue bindings
-    var bindings = JSON.stringify(exchangeData.bindings),
-        routingKey = "";
+    bindings = JSON.stringify(exchangeData.bindings);
+    routingKey = "";
     for(var queueBinding in bindings.queues)
     {
       bindingData = bindings.queues[queueBinding];
