@@ -1,10 +1,10 @@
-var amqp        = require('amqplib/callback_api'),
-    helper      = require('../helpers'),
-    amqpHelper  = require('../helpers/amqp'),
-    consts      = require('../helpers/constants'),
-    Log         = require('log'),
+var amqp        = require("amqplib/callback_api"),
+    helper      = require("../helpers"),
+    amqpHelper  = require("../helpers/amqp"),
+    consts      = require("../helpers/constants"),
+    Log         = require("log"),
     log         = new Log(),
-    config      = require('../config');
+    config      = require("../config");
 
 /*
  * Method to connect to the rabitMQ server. Single connection in the poll of connections
@@ -25,8 +25,8 @@ module.exports.connect= function(amqpConfig)
 
 function createConnection(amqpConfig, amqpChannels)
 {
-  amqp.connect('amqp://' + amqpConfig.user + ':' +
-               amqpConfig.pass + '@' + amqpConfig.addr,
+  amqp.connect("amqp://" + amqpConfig.user + ":" +
+               amqpConfig.pass + "@" + amqpConfig.addr,
     function(err,conn)
     {
       if (err !== null) return log.error(err);
@@ -64,12 +64,12 @@ module.exports.send = function(msg, send)
   // Finally, lets send the message:
   var sms = JSON.stringify(msg);
   if(send)
-    amqpChannels.messages.channel.publish("delayedMessages", '', new Buffer(sms), {headers: {"x-delay": msg.ttd*1000}});
+    amqpChannels.messages.channel.publish("delayedMessages", ", new Buffer(sms), {headers: {"x-delay": msg.ttd*1000}});
 
   // always log
   amqpChannels.messages.channel.sendToQueue("log", new Buffer(sms), {priority: 8});
 
-  log.info('Sent save[*]', msg);
+  log.info("Sent save[*]", msg);
 };
 
 /*
@@ -81,7 +81,7 @@ module.exports.send = function(msg, send)
 module.exports.update = function(state)
 {
   amqpChannels.messages.channel.sendToQueue("log", new Buffer(JSON.stringify(state)), {priority: 3});
-  log.info('Sent update[*]', state);
+  log.info("Sent update[*]", state);
 };
 
 
