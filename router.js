@@ -13,7 +13,7 @@ module.exports = function (router)
   router.post("/messages/campaigns", oauth2.authorise, campaigns.send);
   router.post("/messages", oauth2.authorise, middleware.message, messages.send);
   router.post("/messages/callbacks/infobip", middleware.infobip, callbacks.infobip);
-  router.post("/messages/callbacks/nexmo", middleware.nexmo, callbacks.nexmo);
+  router.get("/messages/callbacks/nexmo", middleware.nexmo, callbacks.nexmo);
   router.post("/messages/callbacks/clickatell", middleware.clickatell, callbacks.clickatell);
   //PUT
   router.put("/messages/:id", oauth2.authorise, middleware.update, messages.update);

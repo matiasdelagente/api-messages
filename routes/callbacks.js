@@ -13,7 +13,7 @@ module.exports.infobip = function(req, res)
 
 module.exports.nexmo = function(req, res)
 {
-  var dlr = req.body;
+  var dlr = req.query;
   dlr.smsSender = "nexmo";
   rabbit.sendToCallbackExchange(req.body, "x");
   res.status(200).send();
