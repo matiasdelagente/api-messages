@@ -344,6 +344,19 @@ function infobip(req, res, next)
   next();
 }
 
+
+function nexmo(req, res, next)
+{
+  // TODO: implement validations for message fields
+  next();
+}
+
+function clickatell(req, res, next)
+{
+  // TODO: implement validations for message fields
+  next();
+}
+
 //Agregado para validar campos recibidos en la api-storage
 function sendMessagesList(req, res, next)
 {
@@ -401,5 +414,7 @@ module.exports.message          = message;
 module.exports.validateMessage  = validateMessage;
 module.exports.update           = update;
 module.exports.infobip          = infobip;
+module.exports.nexmo            = nexmo;
+module.exports.clickatell       = clickatell;
 module.exports.get              = get;
 module.exports.deleteMessage    = deleteMessage;
