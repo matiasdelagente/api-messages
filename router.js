@@ -13,8 +13,8 @@ module.exports = function (router)
   router.post("/messages/campaigns", oauth2.authorise, campaigns.send);
   router.post("/messages", oauth2.authorise, middleware.message, messages.send);
   router.post("/messages/callbacks/infobip", middleware.infobip, callbacks.infobip);
-  router.get("/messages/callbacks/nexmo", middleware.nexmo, callbacks.nexmo);
   router.post("/messages/callbacks/clickatell", middleware.clickatell, callbacks.clickatell);
+
   //PUT
   router.put("/messages/:id", oauth2.authorise, middleware.update, messages.update);
   router.put("/messages", oauth2.authorise, middleware.updateCollection, messages.updateCollection);
@@ -25,6 +25,7 @@ module.exports = function (router)
   router.get("/messages", oauth2.authorise, messages.getByCompanyId);
   router.get("/messages/companies/:companyId", oauth2.authorise, messages.getByPhone);
   router.get("/messages/companies/:companyId/notfull", oauth2.authorise, messages.getByPhoneWOCaptured);
+  router.get("/messages/callbacks/nexmo", middleware.nexmo, callbacks.nexmo);
 
   //DELETE
   router.delete("/messages/:id", oauth2.authorise, middleware.deleteMessage, messages.delete);
