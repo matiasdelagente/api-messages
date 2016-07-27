@@ -72,7 +72,7 @@ function escapeRegExp(str) {
  */
  module.exports.timestampByState = function(newState) {
   var states = {
-        '0':'recived',
+        '0':'received',
         '1':'processing',
         '2':'delivered',
         '3':'acknowledged',
