@@ -87,5 +87,5 @@ module.exports.update = function(state)
 
 module.exports.sendToCallbackExchange = function(dlr, routingKey)
 {
-  amqpChannels.dlr.channel.publish("dlr", routingKey, new Buffer(dlr));
+  amqpChannels.dlr.channel.publish("apiDlr", routingKey, new Buffer(dlr));
 };
