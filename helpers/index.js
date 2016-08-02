@@ -60,8 +60,76 @@ function escapeRegExp(str) {
  * @param {} type
  * @return Literal
  */
- module.exports.checkChannel = function(channel) {
-  return (typeof channel === "undefined" || channel === "") ? conf.app.defaults.channel : channel.toLowerCase();
+module.exports.checkChannel = function(channel)
+{
+  var channel = (typeof channel === "undefined" || channel === "") ? conf.app.defaults.channel : channel.toLowerCase();
+  return carrierTranslator(channel);
+}
+
+function carrierTranslator(channel)
+{
+  switch (channel)
+  {
+    case "1":
+    case "p":
+    case "P":
+    case "personal":
+        translated = "p";
+        break;
+    case "2":
+    case "9":
+    case "M":
+    case "m":
+    case "movistar":
+        translated = "m";
+        break;
+    case "3":
+    case "37":
+    case "C":
+    case "c":
+    case "claro":
+        translated = "c";
+        break;
+    case "4":
+    case "8":
+    case "n":
+    case "N":
+    case "nextel":
+        translated = "n";
+        break;
+    case "5":
+    case "i":
+    case "I":
+    case "infobip":
+        translated = "i";
+        break;
+    case "6":
+    case "x":
+    case "X":
+    case "nexmo":
+        translated = "x";
+        break;
+    case "7":
+    case "t":
+    case "T":
+    case "clickatell":
+        translated = "t";
+        break;
+    case "10":
+    case "w":
+    case "W":
+    case "twilio":
+    case "twillio":
+        translated = "w";
+        break;
+    case "g":
+    case "G":
+    case "todos":
+    default:
+        translated = "g";
+        break;
+}
+  return translated;
 }
 
 /**
