@@ -6,6 +6,7 @@ var amqp        = require("amqplib/callback_api"),
     log         = new Log(),
     config      = require("../config");
 
+
 /*
  * Method to connect to the rabitMQ server. Single connection in the poll of connections
  * @method connect
@@ -64,7 +65,7 @@ module.exports.send = function(msg, send)
   // Finally, lets send the message:
   var sms = JSON.stringify(msg);
   if(send)
-    amqpChannels.messages.channel.publish("delayedMessages", new Buffer(sms), {headers: {"x-delay": msg.ttd*1000}});
+    amqpChannels.messages.channel.publish("delayedMessages", "", new Buffer(sms), {headers: {"x-delay": msg.ttd*1000}});
 
   // always log
   amqpChannels.messages.channel.sendToQueue("log", new Buffer(sms), {priority: 8});
