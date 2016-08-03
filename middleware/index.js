@@ -1,7 +1,10 @@
-var validator = require("validator"),
-    _         = require("lodash"),
+var validator     = require("validator"),
+    _             = require("lodash"),
+    messagesModel = require("../db/models/companies"),
+    api       = require("../helpers/apiCaller.js")
     helpers   = require("../helpers"),
     constants = require("../helpers/constants"),
+    config    = require("../config"),
     Log       = require("log"),
     log       = new Log();
 
@@ -408,6 +411,62 @@ function sendMessagesList(req, res, next)
   }
 }
 
+function checkCompany (req, res, next) {
+  var companyId           = req.companyId,
+      apiCompaniesConfig  = config.api.companies,
+      endpoint            = "/companies/" + companyId;
+
+  api.performRequest(apiCompaniesConfig.host, apiCompaniesConfig.port, apiCompaniesConfig.version, endpoint, "GET",
+    apiCompaniesConfig.accessToken, {}, function(response)
+    {
+      if(response._id)
+      {
+        req.company = response;
+        next();
+      }
+      else
+      {
+        res.status(201).send({success: false, response: response.response});
+      }
+    }, apiCompaniesConfig.secure);
+}
+
+function checkCompanyMessages (req, res, next) {
+  var list = req.body;
+
+  if (req.company.type === 3)
+  {
+    next();
+  }
+  else if (req.company.type === 6)
+  {
+    errorResponse(res, "The company is blocked");
+    list = helpers.filterListbyFlag(list, "4");
+    if(list.length > 0){
+      next();
+    }
+  }
+  else
+  {
+    var listMessagesCount = 0,
+        company           = req.company;
+
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].flags !== "4") {
+        listMessagesCount += list[i].phones.length;
+      }
+    }
+    if(!helpers.checkAvailableMessages(company, listMessagesCount))
+    {
+      errorResponse(res, "Not enough free messages for this company");
+    }
+    else
+    {
+      next();
+    }
+  }
+}
+
 module.exports.updateCollection = updateCollection;
 module.exports.sendMessagesList = sendMessagesList;
 module.exports.message          = message;
@@ -418,3 +477,5 @@ module.exports.nexmo            = nexmo;
 module.exports.clickatell       = clickatell;
 module.exports.get              = get;
 module.exports.deleteMessage    = deleteMessage;
+module.exports.checkCompany     = checkCompany;
+module.exports.checkCompanyMessages  = checkCompanyMessages;

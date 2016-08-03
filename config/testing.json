@@ -96,6 +96,17 @@
       ]
     }
   ],
+  "api":
+  {
+    "companies":
+    {
+      "host": "localhost",
+      "port": "3004",
+      "version": "/v1",
+      "secure": false,
+      "accessToken": "bdd91196f9540316308fc855af89b65f371c605d"
+    }
+  },
   "app":
   {
     "port": "3002",

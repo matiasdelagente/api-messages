@@ -5,7 +5,8 @@
  * @return ConditionalExpression
  */
 var codes = require('./country.json'),
-    conf  = require('../config');
+    conf  = require('../config'),
+    moment = require("moment");
 
 /**
  * @method checkSMS
@@ -174,4 +175,39 @@ function carrierTranslator(channel)
   if(typeof captured.status  !== "undefined") extra.status = captured.status;
 
   return extra;
+};
+
+function checkAvailableMessages(company, listMessagesCount)
+{
+  var companyMessages = company.info.messages || false,
+      now             = moment(),
+      startDate,
+      endDate;
+  if(!companyMessages || !companyMessages.length)
+  {
+    return true;
+  }
+  for(var i = 0; i < companyMessages.length; i++)
+  {
+    startDate = moment(companyMessages[i].startDate, "DD/MM/YYYY");
+    endDate   = moment(companyMessages[i].endDate, "DD/MM/YYYY");
+    if(now.isBetween(startDate, endDate, 'day', '[]') && companyMessages[i].available < listMessagesCount){
+      return false;
+    }
+  }
+  return true;
 }
+
+function filterListbyFlag(list, flag) {
+  var filteredList = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].flags === flag) {
+      filteredList.push(list[i]);
+    }
+  }
+
+  return filteredList;
+}
+
+module.exports.checkAvailableMessages = checkAvailableMessages;
