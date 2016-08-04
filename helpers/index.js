@@ -183,21 +183,100 @@ function checkAvailableMessages(company, listMessagesCount)
       now             = moment(),
       startDate,
       endDate;
+
   if(!companyMessages || !companyMessages.length)
   {
     return true;
   }
-  for(var i = 0; i < companyMessages.length; i++)
+  else
   {
-    startDate = moment(companyMessages[i].startDate, "DD/MM/YYYY");
-    endDate   = moment(companyMessages[i].endDate, "DD/MM/YYYY");
-    if(now.isBetween(startDate, endDate, 'day', '[]') && companyMessages[i].available < listMessagesCount){
-      return false;
+    var createPeriod = true;
+    for(var i = 0; i < companyMessages.length; i++)
+    {
+      startDate = moment(companyMessages[i].startDate, "DD/MM/YYYY");
+      endDate   = moment(companyMessages[i].endDate, "DD/MM/YYYY");
+      if(now.isBetween(startDate, endDate, 'day', '[]')){
+        if (companyMessages[i].available < listMessagesCount) {
+          return false;
+        }
+        createPeriod = false;
+        break;
+      }
     }
+    if(createPeriod){
+      // If no period match this date, a new one is inserted in the company messages array.
+      company.info.messages = createNewPeriod(company.info.messages);
+      saveCompanyNewPeriod(company._id, function(){
+
+      })
+    }
+    return true;
   }
-  return true;
 }
 
+function createNewPeriod(companyMessages) {
+  //set the same year and month of the sending date
+  //set the same start number and end day number of the last period for correlativity
+  var lastPeriod  = messagesList.length ? messagesList[messagesList.length - 1] : createMessagesList(companyCreation),
+      year        = sendDate.year(),
+      month       = sendDate.month(),
+      startDate   = moment(lastPeriod.startDate, "DD/MM/YYYY").date(),
+      endDate     = moment(lastPeriod.endDate, "DD/MM/YYYY").date();
+
+  var newPeriodStart = moment().year(year).month(month).date(startDate).format("DD/MM/YYYY"),
+      newPeriodEnd   = moment().year(year).month(month + 1).date(endDate).format("DD/MM/YYYY");
+
+  //if company type is 2, we set 1000 messages, if is an ONG we set 5000, less the amount of sended messages
+  if(companyType === 2)
+  {
+    totalMessages = 1000 - messagesSended;
+  }
+  else
+  {
+    totalMessages = 5000 - messagesSended;
+  }
+  // if the messagesList doesn't exists, then we create a empty one
+  // and push the new period
+  messagesList = messagesList || [];
+  messagesList.push({startDate: newPeriodStart, endDate: newPeriodEnd, available: totalMessages});
+
+  return messagesList;
+}
+
+function createMessagesList(companyCreation)
+{
+  var creationDate = moment(parseInt(companyCreation)),
+      year         = creationDate.year(),
+      month        = creationDate.month(),
+      startDate    = creationDate.date(),
+      endDate      = startDate - 1;
+
+  var newPeriodStart = moment().year(year).month(month).date(startDate).format("DD/MM/YYYY"),
+      newPeriodEnd   = moment().year(year).month(month + 1).date(endDate).format("DD/MM/YYYY");
+
+  var messagesList = {startDate: newPeriodStart, endDate: newPeriodEnd};
+
+  return messagesList;
+}
+
+function saveCompanyNewPeriod(companyId, cb){
+  var apiCompaniesConfig  = config.api.companies,
+      endpoint            = "/companies/" + companyId;
+
+  api.performRequest(apiCompaniesConfig.host, apiCompaniesConfig.port, apiCompaniesConfig.version, endpoint, "PUT",
+    apiCompaniesConfig.accessToken, {}, function(response)
+    {
+      if(response._id)
+      {
+        req.company = response;
+        next();
+      }
+      else
+      {
+        res.status(201).send({success: false, response: response.response});
+      }
+    }, apiCompaniesConfig.secure);
+}
 function filterListbyFlag(list, flag) {
   var filteredList = [];
 
@@ -211,3 +290,4 @@ function filterListbyFlag(list, flag) {
 }
 
 module.exports.checkAvailableMessages = checkAvailableMessages;
+module.exports.filterListbyFlag       = filterListbyFlag;

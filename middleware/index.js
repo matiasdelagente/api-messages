@@ -1,7 +1,6 @@
 var validator     = require("validator"),
     _             = require("lodash"),
-    messagesModel = require("../db/models/companies"),
-    api       = require("../helpers/apiCaller.js")
+    api       = require("../helpers/apiCaller.js"),
     helpers   = require("../helpers"),
     constants = require("../helpers/constants"),
     config    = require("../config"),
@@ -441,10 +440,10 @@ function checkCompanyMessages (req, res, next) {
   else if (req.company.type === 6)
   {
     errorResponse(res, "The company is blocked");
+    // We take only the messages with flag 4, these messages should be sent always
     list = helpers.filterListbyFlag(list, "4");
-    if(list.length > 0){
-      next();
-    }
+    if(list.length > 0) next() ;
+
   }
   else
   {
@@ -459,6 +458,9 @@ function checkCompanyMessages (req, res, next) {
     if(!helpers.checkAvailableMessages(company, listMessagesCount))
     {
       errorResponse(res, "Not enough free messages for this company");
+      // We take only the messages with flag 4, these messages should be sent always
+      list = helpers.filterListbyFlag(list, "4");
+      if(list.length > 0) next() ;    
     }
     else
     {
