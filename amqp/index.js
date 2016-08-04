@@ -88,5 +88,7 @@ module.exports.update = function(state)
 
 module.exports.sendToCallbackExchange = function(dlr, routingKey)
 {
-  amqpChannels.dlr.channel.publish("apiDlr", routingKey, new Buffer(dlr));
+  var dlrJSON = JSON.stringify(dlr);
+  log.info("Sending DLR to apiDLR exchange with routing key: " + routingKey + " and message: " + dlrJSON);
+  amqpChannels.dlr.channel.publish("apiDlr", routingKey, new Buffer(dlrJSON));
 };
