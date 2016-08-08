@@ -1,5 +1,6 @@
 var validator     = require("validator"),
     _             = require("lodash"),
+    moment        = require("moment"),
     api       = require("../helpers/apiCaller.js"),
     helpers   = require("../helpers"),
     constants = require("../helpers/constants"),
@@ -430,7 +431,7 @@ function checkCompany (req, res, next) {
     }, apiCompaniesConfig.secure);
 }
 
-function checkCompanyMessages (req, res, next) {
+function checkCompanyBillingStatus (req, res, next) {
   var list = req.body;
 
   if (req.company.type === 3)
@@ -443,30 +444,98 @@ function checkCompanyMessages (req, res, next) {
     // We take only the messages with flag 4, these messages should be sent always
     list = helpers.filterListbyFlag(list, "4");
     if(list.length > 0) next() ;
-
   }
   else
   {
     var listMessagesCount = 0,
-        company           = req.company;
+        company           = req.company,
+        date              = moment(parseInt(company.created));
 
     for (var i = 0; i < list.length; i++) {
       if (list[i].flags !== "4") {
         listMessagesCount += list[i].phones.length;
       }
     }
-    if(!helpers.checkAvailableMessages(company, listMessagesCount))
+    if(!checkAvailableMessages(date, company, listMessagesCount, req))
     {
       errorResponse(res, "Not enough free messages for this company");
       // We take only the messages with flag 4, these messages should be sent always
       list = helpers.filterListbyFlag(list, "4");
-      if(list.length > 0) next() ;    
+      if(list.length > 0) next() ;
     }
     else
     {
-      next();
+      if(req.createPeriod)
+      {
+        var billingArray = helpers.createNewPeriod(date, company);
+        company.info.messages = billingArray;
+        saveCompanyNewPeriod(res, company, function(result){
+          if(result)
+          {
+            req.billed = true;
+            next();
+          }
+          else
+          {
+            errorResponse(res, "The new billing period could not be saved");
+          }
+        });
+      }
+      else
+      {
+        req.billed = true;
+        next();
+      }
     }
   }
+}
+
+function checkAvailableMessages(date, company, listMessagesCount, req)
+{
+  var companyMessages = company.info.messages || false,
+      startDate,
+      endDate;
+
+  if(!companyMessages || !companyMessages.length)
+  {
+    req.createPeriod = true;
+    return true;
+  }
+  else
+  {
+    req.createPeriod = true;
+    for(var i = 0; i < companyMessages.length; i++)
+    {
+      startDate = moment(companyMessages[i].startDate, "DD/MM/YYYY");
+      endDate   = moment(companyMessages[i].endDate, "DD/MM/YYYY");
+      if(date.isBetween(startDate, endDate, 'day', '[]')){
+        if (companyMessages[i].available < listMessagesCount) {
+          return false;
+        }
+        req.createPeriod = false;
+      }
+    }
+    return true;
+  }
+}
+
+function saveCompanyNewPeriod(res, company, cb){
+  var apiCompaniesConfig  = config.api.companies,
+      companyId           = company._id.toString(),
+      endpoint            = "/companies/" + companyId;
+
+  api.performRequest(apiCompaniesConfig.host, apiCompaniesConfig.port, apiCompaniesConfig.version, endpoint, "PUT",
+    apiCompaniesConfig.accessToken, company, function(response)
+    {
+      if(response.success)
+      {
+        cb(true);
+      }
+      else
+      {
+        cb(false)
+      }
+    }, apiCompaniesConfig.secure);
 }
 
 module.exports.updateCollection = updateCollection;
@@ -480,4 +549,4 @@ module.exports.clickatell       = clickatell;
 module.exports.get              = get;
 module.exports.deleteMessage    = deleteMessage;
 module.exports.checkCompany     = checkCompany;
-module.exports.checkCompanyMessages  = checkCompanyMessages;
+module.exports.checkCompanyBillingStatus  = checkCompanyBillingStatus;
