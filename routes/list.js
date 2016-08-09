@@ -52,8 +52,12 @@ function listSender(req, msgId)
       flags        : (typeof list[element].flags === "undefined") ? config.app.defaults.flags : list[element].flags,
       companyId    : company,
       billed       : (req.billed === true) ? true : false,
-      totalAvailableMessages : (req.totalAvailableMessages) ? req.totalAvailableMessages : 0
     };
+    //if the message is billed and we have the total number of messages available, we send it
+    if(message.billed && req.totalAvailableMessages)
+    {
+      message.totalAvailableMessages = req.totalAvailableMessages;
+    }
 
     // if the message has been captured by our app, we set the captured extra fields
     var send = true;
