@@ -51,7 +51,8 @@ function listSender(req, msgId)
       listId       : msgId,
       flags        : (typeof list[element].flags === "undefined") ? config.app.defaults.flags : list[element].flags,
       companyId    : company,
-      billed       : (req.billed === true) ? true : false
+      billed       : (req.billed === true) ? true : false,
+      totalAvailableMessages : (req.totalAvailableMessages) ? req.totalAvailableMessages : 0
     };
 
     // if the message has been captured by our app, we set the captured extra fields

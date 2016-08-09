@@ -191,7 +191,7 @@ function createNewPeriod(sendDate, company) {
   var newPeriodStartObject = moment().year(year).month(month).date(startDate),
       newPeriodEndObject   = moment().year(year).month(month).date(startDate).add(1,'months').subtract(1, 'days');
 
-  //if company type is 2, we set 1000 messages, if is an ONG we set 5000, less the amount of sended messages
+  //if company type is 2, we set 1000 messages, if is an ONG we set 5000
   totalMessages = (company.type === 2) ? 1000 : 5000;
 
   // if the messages array doesn't exists, then we create a empty one

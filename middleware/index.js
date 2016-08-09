@@ -449,7 +449,7 @@ function checkCompanyBillingStatus (req, res, next) {
   {
     var listMessagesCount = 0,
         company           = req.company,
-        date              = moment(parseInt(company.created));
+        date              = moment();
 
     for (var i = 0; i < list.length; i++) {
       if (list[i].flags !== "4") {
@@ -472,6 +472,7 @@ function checkCompanyBillingStatus (req, res, next) {
         saveCompanyNewPeriod(res, company, function(result){
           if(result)
           {
+            req.totalAvailableMessages = (company === 2) ? 1000 : 5000;
             req.billed = true;
             next();
           }
@@ -512,6 +513,7 @@ function checkAvailableMessages(date, company, listMessagesCount, req)
         if (companyMessages[i].available < listMessagesCount) {
           return false;
         }
+        req.totalAvailableMessages = companyMessages[i].available;
         req.createPeriod = false;
       }
     }
