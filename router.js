@@ -8,7 +8,7 @@ module.exports = function (router)
       oauth2      = require("./oauth2");
 
   //POST
-  router.post("/messages/lists", oauth2.authorise, middleware.sendMessagesList, list.send);
+  router.post("/messages/lists", oauth2.authorise, middleware.sendMessagesList, middleware.checkCompany, middleware.checkCompanyBillingStatus, list.send);
   router.post("/messages/list", oauth2.authorise, middleware.sendMessagesList, list.send); //momentaneo hasta que todos usen la de arriba
   router.post("/messages/campaigns", oauth2.authorise, campaigns.send);
   router.post("/messages", oauth2.authorise, middleware.message, messages.send);

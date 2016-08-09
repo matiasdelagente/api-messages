@@ -50,8 +50,14 @@ function listSender(req, msgId)
       ttd          : (typeof list[element].ttd === "undefined" || isNaN(parseInt(list[element].ttd))) ? 0 : parseInt(list[element].ttd),
       listId       : msgId,
       flags        : (typeof list[element].flags === "undefined") ? config.app.defaults.flags : list[element].flags,
-      companyId    : company
+      companyId    : company,
+      billed       : (req.billed === true) ? true : false,
     };
+    //if the message is billed and we have the total number of messages available, we send it
+    if(message.billed && req.totalAvailableMessages)
+    {
+      message.totalAvailableMessages = req.totalAvailableMessages;
+    }
 
     // if the message has been captured by our app, we set the captured extra fields
     var send = true;

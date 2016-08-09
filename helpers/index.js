@@ -5,7 +5,8 @@
  * @return ConditionalExpression
  */
 var codes = require('./country.json'),
-    conf  = require('../config');
+    conf  = require('../config'),
+    moment = require("moment");
 
 /**
  * @method checkSMS
@@ -174,4 +175,44 @@ function carrierTranslator(channel)
   if(typeof captured.status  !== "undefined") extra.status = captured.status;
 
   return extra;
+};
+
+function createNewPeriod(sendDate, company) {
+  //set the same year and month of the sending date
+  //set the same start number and end day number of the last period for correlativity
+
+  var messagesArray   = company.info.messages || [],
+      creationDate    = moment(parseInt(company.created)),
+      now             = moment(parseInt(company.created)),
+      year            = sendDate.year(),
+      month           = sendDate.month(),
+      startDate       = creationDate.date();
+
+  var newPeriodStartObject = moment().year(year).month(month).date(startDate),
+      newPeriodEndObject   = moment().year(year).month(month).date(startDate).add(1,'months').subtract(1, 'days');
+
+  //if company type is 2, we set 1000 messages, if is an ONG we set 5000
+  totalMessages = (company.type === 2) ? 1000 : 5000;
+
+  // if the messages array doesn't exists, then we create a empty one
+  // after that, we push the new period
+  messagesArray = messagesArray || [];
+  messagesArray.push({startDate: newPeriodStartObject.format("DD/MM/YYYY"), endDate: newPeriodEndObject.format("DD/MM/YYYY"), available: totalMessages});
+
+  return messagesArray;
 }
+
+function filterListbyFlag(list, flag) {
+  var filteredList = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].flags === flag) {
+      filteredList.push(list[i]);
+    }
+  }
+
+  return filteredList;
+}
+
+module.exports.filterListbyFlag   = filterListbyFlag;
+module.exports.createNewPeriod    = createNewPeriod;
