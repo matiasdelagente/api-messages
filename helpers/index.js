@@ -6,7 +6,8 @@
  */
 var codes = require('./country.json'),
     conf  = require('../config'),
-    moment = require("moment");
+    moment = require("moment"),
+    constants = require("./constants");
 
 /**
  * @method checkSMS
@@ -181,7 +182,7 @@ function createNewPeriod(sendDate, company) {
   //set the same year and month of the sending date
   //set the same start number and end day number of the last period for correlativity
 
-  var messagesArray   = company.info.messages || [],
+  var messagesArray   = company.info.billing || [],
       creationDate    = moment(parseInt(company.created)),
       now             = moment(parseInt(company.created)),
       year            = sendDate.year(),
@@ -191,8 +192,15 @@ function createNewPeriod(sendDate, company) {
   var newPeriodStartObject = moment().year(year).month(month).date(startDate),
       newPeriodEndObject   = moment().year(year).month(month).date(startDate).add(1,'months').subtract(1, 'days');
 
+  // if the send date is earlier than the start period,
+  // then the correct period is one month earlier
+  if (newPeriodStartObject > sendDate)
+  {
+    newPeriodStartObject.subtract(1, 'month');
+    newPeriodEndObject.subtract(1, 'month');
+  }
   //if company type is 2, we set 1000 messages, if is an ONG we set 5000
-  totalMessages = (company.type === 2) ? 1000 : 5000;
+  totalMessages = (company.type === constants.COMPANY_FREE) ? constants.COMPANY_FREE_MESSAGES : constants.COMPANY_ONG_MESSAGES;
 
   // if the messages array doesn't exists, then we create a empty one
   // after that, we push the new period

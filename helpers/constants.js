@@ -57,3 +57,6 @@ define("SOCKETIO_ROOMNAMEPREFIX", "company room : ");
 define("COUNTRY_CODE_LENGTH",     3);
 define("PHONE_LENGTH",            15);
 define("REFERENCEID_LENGTH",      30);
+/* Messages availables for company type */
+define("COMPANY_FREE_MESSAGES",   1000);
+define("COMPANY_ONG_MESSAGES",    5000);
