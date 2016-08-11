@@ -434,7 +434,7 @@ function checkCompany (req, res, next) {
 function checkCompanyBillingStatus (req, res, next) {
   var list = req.body;
 
-  if (req.company.type === 3)
+  if (req.company.type === constants.COMPANY_PRO)
   {
     next();
   }
@@ -468,11 +468,12 @@ function checkCompanyBillingStatus (req, res, next) {
       if(req.createPeriod)
       {
         var billingArray = helpers.createNewPeriod(date, company);
-        company.info.messages = billingArray;
+        console.log(billingArray);
+        company.info.billing = billingArray;
         saveCompanyNewPeriod(res, company, function(result){
           if(result)
           {
-            req.totalAvailableMessages = (company === 2) ? 1000 : 5000;
+            req.totalAvailableMessages = (company.type === constants.COMPANY_FREE) ? constants.COMPANY_FREE_MESSAGES : constants.COMPANY_ONG_MESSAGES;
             req.billed = true;
             next();
           }
@@ -493,7 +494,7 @@ function checkCompanyBillingStatus (req, res, next) {
 
 function checkAvailableMessages(date, company, listMessagesCount, req)
 {
-  var companyMessages = company.info.messages || false,
+  var companyMessages = company.info.billing || false,
       startDate,
       endDate;
 
