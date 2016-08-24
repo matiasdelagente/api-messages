@@ -4,7 +4,6 @@ var amqp            = require("amqplib/callback_api"),
     _               = require("lodash"),
     errorReportConf = config.errorReporting,
     slack           = new IncomingWebhook(errorReportConf.url),
-    helper          = require("../helpers"),
     amqpHelper      = require("../helpers/amqp"),
     bof             = require('backoff'),
     consts          = require("../helpers/constants"),
@@ -21,7 +20,7 @@ var amqp            = require("amqplib/callback_api"),
  * @param {} server (nameserv or ip)
  * @return
  */
-module.exports.connect= function(amqpConfig)
+module.exports.connect = function(amqpConfig)
 {
   var total = amqpConfig.length,
       connBackOff = null;
@@ -168,7 +167,7 @@ function assertCallback(err, ok)
 
 function reportMessageToSlack(message, amqpConfig)
 {
-  if(nodeEnv === "development")
+  if(nodeEnv !== "development")
   {
     var messageProperties = errorReportConf.messageProperties,
       notification      =  _.merge(messageProperties, message),
@@ -180,7 +179,7 @@ function reportMessageToSlack(message, amqpConfig)
     notification.attachments[0].fallback = notification.attachments[0].title;
     slack.send(notification, function()
     {
-      log.info("Error reported correctly to Slack.", title);
+      log.info("Notification reported correctly to Slack.", title);
     });
   }
 }
