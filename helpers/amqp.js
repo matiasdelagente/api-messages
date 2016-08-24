@@ -1,15 +1,16 @@
-var amqp            = require("amqplib/callback_api"),
-    IncomingWebhook = require("@slack/client").IncomingWebhook,
-    config          = require("../config"),
-    _               = require("lodash"),
-    errorReportConf = config.errorReporting,
-    slack           = new IncomingWebhook(errorReportConf.url),
-    bof             = require('backoff'),
-    processKilled   = false,
-    amqpChannels    = null,
-    nodeEnv         = process.env.NODE_ENV || 'development',
-    Log             = require("log"),
-    log             = new Log();
+var amqp                  = require("amqplib/callback_api"),
+    IncomingWebhook       = require("@slack/client").IncomingWebhook,
+    config                = require("../config"),
+    _                     = require("lodash"),
+    errorReportConf       = config.errorReporting,
+    slack                 = new IncomingWebhook(errorReportConf.url),
+    bof                   = require('backoff'),
+    processKilled         = false,
+    amqpChannels          = null,
+    channelOpenedCallback = null,
+    nodeEnv               = process.env.NODE_ENV || 'development',
+    Log                   = require("log"),
+    log                   = new Log();
 
 /*
  * Creates a new connection to AMQP and adds reconnection back-off.
@@ -47,6 +48,11 @@ function createConnection(amqpConfig)
 
         amqpChannels[amqpConfig.name] = {config: amqpConfig, channel: ch};
         setupAMQP(ch, amqpConfig, assertCallback);
+
+        if(channelOpenedCallback)
+        {
+          channelOpenedCallback(ch);
+        }
       });
 
       process.once('SIGINT', function()
@@ -202,11 +208,12 @@ function setupAMQP(ch, amqpConfig, assertCallback)
 }
 
 
-function initializeAMQP(amqpConfig, channels)
+function initializeAMQP(amqpConfig, connections, channelsCallback)
 {
   var total = amqpConfig.length;
 
-  amqpChannels = channels;
+  amqpChannels = connections;
+  channelOpenedCallback = channelsCallback;
 
   for(var i = 0; i < total; i++)
   {
