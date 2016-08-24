@@ -12,12 +12,12 @@ var config          = require("../config"),
  * @param {} server (nameserv or ip)
  * @return
  */
-module.exports.connect = function(amqpConfig)
+function connect(amqpConfig)
 {
   // we need to pass a reference to amqpChannels so we can use it in other methods
   // it will get populated with the channels references
   amqpHelper.initializeAMQP(amqpConfig, amqpChannels);
-};
+}
 
 /*
  * Send a message to RabbitMQ server - Makes the field name mapping
@@ -25,7 +25,7 @@ module.exports.connect = function(amqpConfig)
  * @param {} msg
  * @return
  */
-module.exports.send = function(msg, send)
+function send(msg, send)
 {
   // add trace if not present
   msg.trace     = msg.trace ? msg.trace : config.app.defaults.trace;
@@ -43,7 +43,7 @@ module.exports.send = function(msg, send)
   amqpChannels.messages.channel.sendToQueue("log", new Buffer(sms), {priority: 8});
 
   log.info("Sent save[*]", msg);
-};
+}
 
 /*
  * Send a status update message to RabbitMQ server
@@ -51,16 +51,21 @@ module.exports.send = function(msg, send)
  * @param {} state
  * @return
  */
-module.exports.update = function(state)
+function update(state)
 {
   amqpChannels.messages.channel.sendToQueue("log", new Buffer(JSON.stringify(state)), {priority: 3});
   log.info("Sent update[*]", state);
-};
+}
 
 
-module.exports.sendToCallbackExchange = function(dlr, routingKey)
+function sendToCallbackExchange(dlr, routingKey)
 {
   var dlrJSON = JSON.stringify(dlr);
   log.info("Sending DLR to apiDLR exchange with routing key: " + routingKey + " and message: " + dlrJSON);
   amqpChannels.dlr.channel.publish("apiDlr", routingKey, new Buffer(dlrJSON));
-};
+}
+
+module.exports.connect = connect;
+module.exports.send = send;
+module.exports.update = update;
+module.exports.sendToCallbackExchange = sendToCallbackExchange;

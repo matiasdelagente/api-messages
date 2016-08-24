@@ -7,6 +7,16 @@
       "user": "admin",
       "pass": "2334E8Fx4g9p24g",
       "port": "",
+      "reconnection":
+      {
+        "failAfter": 50,
+        "properties":
+        {
+          "randomisationFactor": 0,
+          "initialDelay": 10,
+          "maxDelay": 3600000
+        }
+      },
       "queues":
       [
         {
@@ -60,6 +70,16 @@
       "user": "admin",
       "pass": "admin1234",
       "port": "",
+      "reconnection":
+      {
+        "failAfter": 50,
+        "properties":
+        {
+          "randomisationFactor": 0,
+          "initialDelay": 10,
+          "maxDelay": 3600000
+        }
+      },
       "queues":
       [
         {
