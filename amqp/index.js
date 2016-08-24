@@ -1,10 +1,18 @@
-var amqp        = require("amqplib/callback_api"),
-    helper      = require("../helpers"),
-    amqpHelper  = require("../helpers/amqp"),
-    consts      = require("../helpers/constants"),
-    Log         = require("log"),
-    log         = new Log(),
-    config      = require("../config");
+var amqp            = require("amqplib/callback_api"),
+    config          = require("../config"),
+    IncomingWebhook = require("@slack/client").IncomingWebhook,
+    _               = require("lodash"),
+    errorReportConf = config.errorReporting,
+    slack           = new IncomingWebhook(errorReportConf.url),
+    helper          = require("../helpers"),
+    amqpHelper      = require("../helpers/amqp"),
+    bof             = require('backoff'),
+    consts          = require("../helpers/constants"),
+    channelBackOff  = null,
+    processKilled   = false,
+    nodeEnv         = process.env.NODE_ENV || 'development',
+    Log             = require("log"),
+    log             = new Log();
 
 
 /*
@@ -15,36 +23,171 @@ var amqp        = require("amqplib/callback_api"),
  */
 module.exports.connect= function(amqpConfig)
 {
-  var total = amqpConfig.length;
+  var total = amqpConfig.length,
+      connBackOff = null;
+
   // global var :(
   amqpChannels = {};
+
   for(var i = 0; i < total; i++)
   {
-    createConnection(amqpConfig[i], amqpChannels);
+    connBackOff = initializeBackOff(amqpConfig[i]);
+    amqpConfig[i].backOffFunction = connBackOff;
+    createConnection(amqpConfig[i], errorEstablishingConnection);
   }
 };
 
-function createConnection(amqpConfig, amqpChannels)
+/*
+ * Creates a new connection to AMQP and adds reconnection back-off.
+ * It also attachs a hook to close this connection in case the NodeJS process is terminated
+ */
+function createConnection(amqpConfig, cb)
 {
-  amqp.connect("amqp://" + amqpConfig.user + ":" +
-               amqpConfig.pass + "@" + amqpConfig.addr,
-    function(err,conn)
+  amqp.connect("amqp://" + amqpConfig.user + ":" + amqpConfig.pass + "@" + amqpConfig.addr,
+    function(err, connection)
     {
-      if (err !== null) return log.error(err);
+      if (err !== null)
+      {
+        // we call the callback with an error so it starts the backoff to reconnect
+        return cb(err, amqpConfig.backOffFunction);
+      }
 
-      conn.createChannel(function(err,ch)
+      connection.on("error", function(err)
+      {
+        log.warning("Connection error event emitted.");
+        onConnectionError(amqpConfig);
+      });
+
+      connection.on("close", function()
+      {
+        log.warning("Connection close event emitted.");
+        if(!processKilled)
+        {
+          onConnectionError(amqpConfig);
+        }
+      });
+
+      connection.createChannel(function(err,ch)
       {
         if (err !== null) return log.error(err);
 
         amqpChannels[amqpConfig.name] = {config: amqpConfig, channel: ch};
         amqpHelper.setupAMQP(ch, amqpConfig, assertCallback);
       });
+
+      process.once('SIGINT', function()
+      {
+        processKilled = true;
+        log.warning("Received SIGINT process signal. Closing AMQP connection to " + amqpConfig.addr);
+
+        connection.close();
+      });
+
+      // we report the error to Slack
+      var reportMessage = errorReportConf.messages.connectionEstablished;
+      reportMessageToSlack(reportMessage, amqpConfig, amqpConfig);
+      // we call the callback with no error, so it resets the backoff
+      cb(null, amqpConfig.backOffFunction);
     });
 }
 
-function assertCallback(err,ok){
+function errorEstablishingConnection(err, backOffFunction)
+{
+  if(err)
+  {
+    if(backOffFunction !== undefined)
+    {
+      backOffFunction.backoff(err);
+    }
+    else
+    {
+      log.error("Trying to access an undefined backOff function");
+    }
+  }
+  else
+  {
+    backOffFunction.reset();
+  }
+}
+
+function onConnectionError(amqpConfig)
+{
+  log.error("AMQP connection error occurred. Re-establishing connection.");
+  // we report the error to Slack
+  var reportMessage = errorReportConf.messages.connectionError;
+  reportMessageToSlack(reportMessage, amqpConfig);
+  // let's try to reconnect
+  createConnection(amqpConfig, errorEstablishingConnection);
+}
+
+function initializeBackOff(amqpConfig)
+{
+  var reconnectionConfig = amqpConfig.reconnection;
+  var backOff = bof.exponential(reconnectionConfig.properties);
+  if(reconnectionConfig.hasOwnProperty("failAfter"))
+  {
+    backOff.failAfter(reconnectionConfig.failAfter);
+  }
+
+  backOff.on('backoff', function(number, delay)
+  {
+    // Do something when backoff starts, e.g. show to the
+    // user the delay before next reconnection attempt.
+    log.info("Starting to reconnect to " + amqpConfig.name + " AMQP at " +
+             amqpConfig.addr + ". Attempt number " + (number+1) + ' - ' + delay + 'ms');
+  });
+
+  // Emitted when a backoff operation is done.
+  // Signals that the failing operation should be retried
+  backOff.on('ready', function(number, delay)
+  {
+    // we try to recreate the connection
+    createConnection(amqpConfig, errorEstablishingConnection);
+  });
+
+  // Do something when the maximum number of backoffs is reached.
+  backOff.on('fail', function()
+  {
+    var errorMessage = "Fatal Error. Could not connect to AMQP after several attempts." +
+      "You should restart the process after the networking issues are solved.";
+    log.error(errorMessage);
+
+    // we report the error to Slack
+    var reportMessage = errorReportConf.messages.connectionFatalError;
+    reportMessageToSlack(reportMessage, amqpConfig);
+    process.exit(1);
+  });
+  return backOff;
+}
+
+function assertCallback(err, ok)
+{
   if(err) log.error(err);
   else log.info(ok);
+}
+
+function reportMessageToSlack(message, amqpConfig)
+{
+  if(nodeEnv === "development")
+  {
+    var messageProperties = errorReportConf.messageProperties,
+      notification      =  _.merge(messageProperties, message),
+      title             = notification.attachments[0].title;
+
+    title = replaceAll(title, "{connHost}", amqpConfig.addr);
+    title = replaceAll(title, "{connName}", amqpConfig.name);
+    notification.attachments[0].title = title;
+    notification.attachments[0].fallback = notification.attachments[0].title;
+    slack.send(notification, function()
+    {
+      log.info("Error reported correctly to Slack.", title);
+    });
+  }
+}
+
+function replaceAll(target, search, replacement)
+{
+  return target.split(search).join(replacement);
 }
 
 /*
