@@ -1,51 +1,23 @@
-var amqp        = require("amqplib/callback_api"),
-    helper      = require("../helpers"),
-    amqpHelper  = require("../helpers/amqp"),
-    consts      = require("../helpers/constants"),
-    Log         = require("log"),
-    log         = new Log(),
-    config      = require("../config");
+var config          = require("../config"),
+    amqpHelper      = require("../helpers/amqp"),
+    consts          = require("../helpers/constants"),
+    Log             = require("log"),
+    log             = new Log(),
+    amqpChannels    = {};
 
 
 /*
- * Method to connect to the rabitMQ server. Single connection in the poll of connections
+ * Method to connect to the rabitMQ server.
  * @method connect
  * @param {} server (nameserv or ip)
  * @return
  */
-module.exports.connect= function(amqpConfig)
+module.exports.connect = function(amqpConfig)
 {
-  var total = amqpConfig.length;
-  // global var :(
-  amqpChannels = {};
-  for(var i = 0; i < total; i++)
-  {
-    createConnection(amqpConfig[i], amqpChannels);
-  }
+  // we need to pass a reference to amqpChannels so we can use it in other methods
+  // it will get populated with the channels references
+  amqpHelper.initializeAMQP(amqpConfig, amqpChannels);
 };
-
-function createConnection(amqpConfig, amqpChannels)
-{
-  amqp.connect("amqp://" + amqpConfig.user + ":" +
-               amqpConfig.pass + "@" + amqpConfig.addr,
-    function(err,conn)
-    {
-      if (err !== null) return log.error(err);
-
-      conn.createChannel(function(err,ch)
-      {
-        if (err !== null) return log.error(err);
-
-        amqpChannels[amqpConfig.name] = {config: amqpConfig, channel: ch};
-        amqpHelper.setupAMQP(ch, amqpConfig, assertCallback);
-      });
-    });
-}
-
-function assertCallback(err,ok){
-  if(err) log.error(err);
-  else log.info(ok);
-}
 
 /*
  * Send a message to RabbitMQ server - Makes the field name mapping

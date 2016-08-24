@@ -107,6 +107,7 @@
       "accessToken": "bdd91196f9540316308fc855af89b65f371c605d"
     }
   },
+  "oauth2": "mongodb://mongodb-testing/oauth2",
   "app":
   {
     "port": "3002",
@@ -133,5 +134,112 @@
     "addr": "mongodb-testing",
     "port": "27017"
   },
-  "oauth2": "mongodb://mongodb-testing/oauth2"
+  "errorReporting":
+  {
+    "url": "https://hooks.slack.com/services/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",
+    "messageProperties":
+    {
+      "username": "API Messages",
+      "channel": "#alerts_status"
+    },
+    "messages":
+    {
+      "processKilled":
+      {
+        "text": "La API está caída",
+        "attachments":
+        [
+          {
+            "title": "El proceso de NodeJS de la API ha sido eliminado (SIGINT)",
+            "color": "#AD1818",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Alta",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "testing",
+                "short": false
+              }
+            ]
+          }
+        ]
+      },
+      "connectionEstablished":
+      {
+        "text": "Conexión con RabbitMQ exitosa",
+        "attachments":
+        [
+          {
+            "title": "La conexión {connName} con RabbitMQ ha sido establecida correctamente en el host {connHost}.",
+            "color": "#36a64f",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Información",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "testing",
+                "short": false
+              }
+            ]
+          }
+        ]
+      },
+      "connectionError":
+      {
+        "text": "Error en la conexión con RabbitMQ",
+        "attachments":
+        [
+          {
+            "title": "Hubo un error en la conexión {connName} con RabbitMQ en el host {connHost}. Intentando reconectar.",
+            "color": "#AD1818",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Alta",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "testing",
+                "short": false
+              }
+            ]
+          }
+        ]
+      },
+      "connectionFatalError":
+      {
+        "text": "Error fatal en la conexión con RabbitMQ",
+        "attachments":
+        [
+          {
+            "title": "Hubo un error en la conexión  {connName} con RabbitMQ en el host {connHost}. Se agotaron las instancias de reintento de reconexión.",
+            "color": "#AD1818",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Crítica",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "testing",
+                "short": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
 }

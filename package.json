@@ -7,7 +7,9 @@
     "test": "NODE_ENV=test ./node_modules/.bin/mocha -R spec test/init.js test/**/*_test.js"
   },
   "dependencies": {
+    "@slack/client": "slackhq/node-slack-sdk",
     "amqplib": "^0.4.0",
+    "backoff": "^2.5.0",
     "body-parser": "^1.13.2",
     "colors": "*",
     "express": "4.13.1",
