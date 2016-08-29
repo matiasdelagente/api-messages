@@ -1,0 +1,264 @@
+{
+  "amqp":
+  [
+    {
+      "name": "messages",
+      "addr": "mq-push-staging",
+      "user": "admin",
+      "pass": "admin1234",
+      "port": "",
+      "reconnection":
+      {
+        "failAfter": 50,
+        "properties":
+        {
+          "randomisationFactor": 0,
+          "initialDelay": 10,
+          "maxDelay": 3600000
+        }
+      },
+      "queues":
+      [
+        {
+          "name": "log",
+          "options":
+          {
+            "durable": true,
+            "maxPriority": 10
+          }
+        },
+        {
+          "name": "buffer",
+          "options":
+          {
+            "durable": true
+          }
+        }
+      ],
+      "exchanges":
+      [
+        {
+          "name": "delayedMessages",
+          "type": "x-delayed-message",
+          "alternateExchange" : "dlx",
+          "options":
+          {
+            "autoDelete": false,
+            "durable": true,
+            "passive": true,
+            "arguments":
+            {
+              "x-delayed-type": "fanout"
+            }
+          },
+          "bindings":
+          {
+            "queues":
+            [
+              {
+                "name" : "buffer"
+              }
+            ],
+            "exchanges":[]
+          }
+        }
+      ]
+    },
+    {
+      "name": "dlr",
+      "addr": "mq-push-staging",
+      "user": "admin",
+      "pass": "admin1234",
+      "port": "",
+      "reconnection":
+      {
+        "failAfter": 50,
+        "properties":
+        {
+          "randomisationFactor": 0,
+          "initialDelay": 10,
+          "maxDelay": 3600000
+        }
+      },
+      "queues":
+      [
+        {
+          "name": "dlr",
+          "options":
+          {
+            "durable": true
+          }
+        }
+      ],
+      "exchanges":
+      [
+        {
+          "name": "apiDlr",
+          "type": "topic",
+          "options":
+          {
+            "autoDelete": false,
+            "durable": true,
+            "passive": true
+          },
+          "bindings":
+          {
+            "queues":
+            [
+              {
+                "name" : "dlr",
+                "routingKey" : "*"
+              }
+            ],
+            "exchanges":[]
+          }
+        }
+      ]
+    }
+  ],
+  "api":
+  {
+    "companies":
+    {
+      "host": "localhost",
+      "port": "3004",
+      "version": "/v1",
+      "secure": false,
+      "accessToken": "bdd91196f9540316308fc855af89b65f371c605d"
+    }
+  },
+  "oauth2": "mongodb://mongodb-staging/oauth2",
+  "app":
+  {
+    "port": "3002",
+    "ver": "1",
+    "defaults":
+    {
+      "user": "tween",
+      "from": "26100",
+      "trace": "API_MESSAGES",
+      "flags": "3",
+      "channel": "t"
+    }
+  },
+  "backendBusiness" :
+  {
+    "host"        : "staging-business.vloom.io",
+    "port"        : "3003",
+    "version"     : "",
+    "accessToken" : ""
+  },
+  "db":
+  {
+    "addr": "mongodb-staging",
+    "port": "27017"
+  },
+  "errorReporting":
+  {
+    "url": "https://hooks.slack.com/services/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",
+    "messageProperties":
+    {
+      "username": "API Messages",
+      "channel": "#alerts_status"
+    },
+    "messages":
+    {
+      "processKilled":
+      {
+        "text": "La API está caída",
+        "attachments":
+        [
+          {
+            "title": "El proceso de NodeJS de la API ha sido eliminado (SIGINT)",
+            "color": "#AD1818",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Alta",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "staging",
+                "short": false
+              }
+            ]
+          }
+        ]
+      },
+      "connectionEstablished":
+      {
+        "text": "Conexión con RabbitMQ exitosa",
+        "attachments":
+        [
+          {
+            "title": "La conexión {connName} con RabbitMQ ha sido establecida correctamente en el host {connHost}.",
+            "color": "#36a64f",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Información",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "staging",
+                "short": false
+              }
+            ]
+          }
+        ]
+      },
+      "connectionError":
+      {
+        "text": "Error en la conexión con RabbitMQ",
+        "attachments":
+        [
+          {
+            "title": "Hubo un error en la conexión {connName} con RabbitMQ en el host {connHost}. Intentando reconectar.",
+            "color": "#AD1818",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Alta",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "staging",
+                "short": false
+              }
+            ]
+          }
+        ]
+      },
+      "connectionFatalError":
+      {
+        "text": "Error fatal en la conexión con RabbitMQ",
+        "attachments":
+        [
+          {
+            "title": "Hubo un error en la conexión  {connName} con RabbitMQ en el host {connHost}. Se agotaron las instancias de reintento de reconexión.",
+            "color": "#AD1818",
+            "fields":
+            [
+              {
+                "title": "Prioridad",
+                "value": "Crítica",
+                "short": false
+              },
+              {
+                "title": "Entorno",
+                "value": "staging",
+                "short": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
